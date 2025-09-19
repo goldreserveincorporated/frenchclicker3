@@ -7,53 +7,84 @@
 }
 .unlock-container {
   display: flex;
+  justify-content: center;
   flex-direction: column;
   width: 30vw;
+  margin: 2.5%;
   position: relative;
+}
+.unlock-header {
+  font-size: 300%;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 10px;
+  margin-bottom: 2.5%;
+  border: 1px solid white;
 }
 .disabled {
   display: none !important;
 }
+.pa-container {
+  display: flex;
+  gap: 3%;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  margin-left: 2.5%;
+  justify-content: flex-start;
+}
+
 .topbar-unlock {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  box-sizing: border-box;
   flex-direction: row;
   color: white;
-  gap: 1.5%;
+  border-right: 1px solid white;
+  border-left: 1px solid white;
+  border-top: 1px solid white;
   width: 100%;
+  padding: 2.5%;
+  border-radius: 10px 10px 0 0;
   align-items: center;
 }
 .topbar-unlock span {
-  font-size: 150%;
-  margin-left: 3%;
+  font-size: 200%;
 }
-.topbar-unlock div:hover {
+.topbar-unlock .pa-change:hover {
   background-color: white;
   color: var(--bg);
   cursor: pointer;
 }
-.locked span {
-  padding: 5%;
-}
 .locked {
-  width: 100%;
-  height: 20%;
+  width: 90%;
+  height: 50%;
+  font-size: 1.25vw;
   margin-top: 2.5%;
   display: flex;
+  flex-shrink: 0;
   font-weight: bold;
-  color: var(--yellow);
+  color: var(--bg);
+  z-index: 2;
   justify-content: center;
   align-items: center;
-  border: 1px solid var(--yellow);
+  background-color: var(--yellow);
   border-radius: 10px;
+  text-align: center;
+  position: absolute;
 }
+
 .main-unlock {
-  margin-top: 2.5%;
   gap: 5%;
+  width: 100%;
+  overflow-y: scroll;
+  box-sizing: border-box;
   flex-direction: column;
   display: flex;
   height: 70vh;
   align-items: center;
+  padding: 5%;
+  border: 1px solid white;
 }
 .divider {
   border-bottom: 1px solid white;
@@ -66,13 +97,22 @@
 }
 .unlock {
   width: 100%;
-  margin: 0 0 0 15%;
+
   /* border: 1px solid white; */
-  padding: 4%;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   position: relative;
+}
+.locked-container {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.blur {
+  filter: blur(5px);
 }
 .unlock-name {
   font-size: 200%;
@@ -103,6 +143,13 @@
   width: 100%;
   user-select: none;
   height: 15%;
+}
+.selection-container {
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: end;
 }
 .buy-btn {
   display: flex;
@@ -150,7 +197,7 @@
   background-color: white;
   color: var(--bg);
 }
-.topbar-unlock div {
+.topbar-unlock .pa-change {
   padding: 2%;
   font-size: 100%;
   transition: 0.2s linear;

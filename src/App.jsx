@@ -9,56 +9,167 @@ var croissantplurals = {
  factory:'factories',
  industry: 'industries'
 }
+var croissantunlockdata = {
+chef: {price: 100, required: 0},
+bakery: {price: 500,required: 5},
+market: {price: 1000,  required: 10},
+factory: {price: 5000,  required: 25},
+industry: {price: 10000, required: 50},
+}
 
 
 var Purchaseamount = 1;
 function App() {
+  const [croissantunlockprices, pricechange] =  useState({
+  chef: 100,
+  bakery: 500,
+  market:1000,
+  factory:5000,
+  industry:10000,
+})
+const [croissantunlockstats, setstats]=useState({
+  chef: {cps: 1},
+  bakery: {cps: 5},
+  market: {cps: 10},
+  factory: {cps: 50},
+  industry: {cps: 100},
+})
  const [croissantunlocks, setamount]=useState({
    chef: 0,
    bakery:0,
    market:0,
    factory:0,
    industry:0,})
- const [purchaseamt, setPurchaseamt] = useState(1);
+const [money, setmoney]=useState(43214323);
+const [purchaseamt, setPurchaseamt] = useState(1);
 const purchasechange = (amt) => {
  Purchaseamount = amt;
  setPurchaseamt(amt);
 }
- const purchasecroissant=(unlock)=>{
-   console.log(croissantunlocks)
+const unlockpricechange = (unlock, change) => {
+ pricechange({
+   ...croissantunlockprices,
+   [unlock]: croissantunlockprices[unlock] * change
+ });
+}
+
+const changemoney = (amt) => {
+ setmoney(money + amt);
+}
+ const purchasecroissant=(unlock, price)=>{
+  console.log(unlock);
+  console.log(price);
+  if (money<price*purchaseamt) return;
+  if (purchaseamt==='Max'){
+    var maxbuy = Math.floor(money/price);
+    changemoney(-maxbuy*price);
+    setamount({
+      ...croissantunlocks,
+      [unlock]: croissantunlocks[unlock]+maxbuy
+    });
+    return;
+   }
+  changemoney(-price*purchaseamt);
    setamount({
      ...croissantunlocks,
      [unlock]: croissantunlocks[unlock]+purchaseamt
    });
  }
 
+function Croissantunlockshop() {
+  const entries = Object.entries(croissantunlockdata);
+
+
+  let firstLockedIndex = entries.findIndex(([key, value], index) => {
+    if (index === 0) return false; // first one (chef) is always unlocked
+    const [prevKey] = entries[index - 1];
+    return croissantunlocks[prevKey] < value.required;
+  });
+
+
+  if (firstLockedIndex === -1) firstLockedIndex = entries.length;
+
+  return entries.map(([key, value], index) => {
+    if (index < firstLockedIndex) {
+      return (
+        <div className="unlock" key={key}>
+          <div className="info">
+            <div className="left-info">
+              <span className="unlock-name">
+                Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+              </span>
+              <div className="description">
+                +{croissantunlockstats[key].cps} Croissants/s
+              </div>
+            </div>
+            <div className="amount">{croissantunlocks[key]}</div>
+          </div>
+          <div className="buyarea">
+            <div
+              className="buy-btn"
+              onClick={() =>
+                purchasecroissant(key, croissantunlockprices[key])
+              }
+            >
+              Purchase {purchaseamt}
+            </div>
+            <div className="price">${croissantunlockprices[key]}</div>
+          </div>
+        </div>
+      );
+    } else if (index === firstLockedIndex) {
+      const [prevKey] = entries[index - 1];
+      
+      return (<div className='locked-container'>        <Uc key={key} unlock={prevKey} required={value.required} /><div className="unlock blur" key={key}>
+
+          <div className="info">
+            <div className="left-info">
+              <span className="unlock-name">
+                Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+              </span>
+              <div className="description">
+                +{croissantunlockstats[key].cps} Croissants/s
+              </div>
+            </div>
+          </div>
+          <div className="buyarea">
+            <div
+              className="buy-btn"
+              onClick={() =>
+                purchasecroissant(key, croissantunlockprices[key])
+              }
+            >
+              Purchase {purchaseamt}
+            </div>
+            <div className="price">${croissantunlockprices[key]}</div>
+          </div>
+        </div> </div>);
+    }
+    return null;
+  });
+}
+
+
 
  function Uc(type) {
  if (croissantunlocks[type.unlock]<parseInt(type.required)){
-   return(<div className='locked'><span><FontAwesomeIcon icon={faUnlock} />Buy {type.required} more {croissantplurals[type.unlock]} to unlock </span></div>)
+   return(<div className='locked'><span><FontAwesomeIcon icon={faUnlock} />Buy {parseInt(type.required) - croissantunlocks[type.unlock]} more {croissantplurals[type.unlock]} to unlock </span></div>)
  }
 }
 
 
  return (
    <>
-  
+
     <div className='unlock-container'>
-     <div className="topbar-unlock"><span>Purchase</span><div className={purchaseamt===1? 'selected':''} onClick={() => purchasechange(1)}>1</div><div className={purchaseamt===10? 'selected':''} onClick={() => purchasechange(10)}>10</div><div className={purchaseamt===100? 'selected':''} onClick={() => purchasechange(100)}>100</div><div className={purchaseamt==='Max'? 'selected':''} onClick={() => purchasechange('Max')}>Max</div></div>
+      <div className='unlock-header'>Unlocks</div>
+     <div className="topbar-unlock"><div className='pa-container'><span>Purchase</span><div className={purchaseamt===1? 'selected pa-change':'pa-change'} onClick={() => purchasechange(1)}>1</div><div className={purchaseamt===10? 'selected pa-change':'pa-change'} onClick={() => purchasechange(10)}>10</div><div className={purchaseamt===100? 'selected pa-change':'pa-change'} onClick={() => purchasechange(100)}>100</div><div className={purchaseamt==='Max'? 'selected pa-change':'pa-change'} onClick={() => purchasechange('Max')}>Max</div>
+     </div><div className='selection-container'></div>
+
+     </div>
      <div className='main-unlock'>
-       <div className="unlock">
-         <div className='info'><div className='left-info'><span className='unlock-name'>Croissant Chef
-</span><div className='description'>+10 Croissants/s</div></div>
-<div className='amount'>{croissantunlocks.chef}</div></div>
-<div className='buyarea'><div className='buy-btn' onClick={()=>purchasecroissant('chef')}>Purchase {purchaseamt}</div><div className='price'>$100</div></div>
-       </div>
-       <div className="unlock">
-         <div className='info'><div className='left-info'><span className='unlock-name'>Croissant Bakery
-</span><div className='description'>+10 Croissants/s</div></div>
-<div className='amount'>{croissantunlocks.bakery}</div></div>
-<div className={croissantunlocks.chef>=5?'buyarea':'disabled'}><div className='buy-btn'  onClick={()=>purchasecroissant('bakery')}>Purchase {purchaseamt}</div><div className='price'>$500</div></div>
-<Uc unlock='chef' required='5'/>
-       </div>
+      <Croissantunlockshop />
+  
      </div>
     </div>
    </>
