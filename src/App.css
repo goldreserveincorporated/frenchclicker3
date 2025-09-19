@@ -1,42 +1,159 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+:root {
+  --money-green: #adebb3;
+  --blue: #9ba2ff;
+  --yellow: #ffde21;
+  --bg: #242424;
+  --disabled: #d3d3d3;
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.unlock-container {
+  display: flex;
+  flex-direction: column;
+  width: 30vw;
+  position: relative;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.disabled {
+  display: none !important;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.topbar-unlock {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: row;
+  color: white;
+  gap: 1.5%;
+  width: 100%;
+  align-items: center;
 }
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.topbar-unlock span {
+  font-size: 150%;
+  margin-left: 3%;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.topbar-unlock div:hover {
+  background-color: white;
+  color: var(--bg);
+  cursor: pointer;
 }
-
-.card {
-  padding: 2em;
+.locked span {
+  padding: 5%;
 }
-
-.read-the-docs {
-  color: #888;
+.locked {
+  width: 100%;
+  height: 20%;
+  margin-top: 2.5%;
+  display: flex;
+  font-weight: bold;
+  color: var(--yellow);
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--yellow);
+  border-radius: 10px;
+}
+.main-unlock {
+  margin-top: 2.5%;
+  gap: 5%;
+  flex-direction: column;
+  display: flex;
+  height: 70vh;
+  align-items: center;
+}
+.divider {
+  border-bottom: 1px solid white;
+  background-color: transparent;
+  width: 100%;
+  position: absolute;
+  left: 75%;
+  top: 5%;
+  transform: translate(-50%, -50%);
+}
+.unlock {
+  width: 100%;
+  margin: 0 0 0 15%;
+  /* border: 1px solid white; */
+  padding: 4%;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.unlock-name {
+  font-size: 200%;
+}
+.info {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+.description {
+  display: flex;
+  white-space: nowrap;
+  font-size: clamp(75%, 125%, 150%);
+  align-items: center;
+}
+.left-info {
+  display: flex;
+  height: 100%;
+  width: 70%;
+  flex-direction: column;
+}
+.buyarea {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 2.5%;
+  width: 100%;
+  user-select: none;
+  height: 15%;
+}
+.buy-btn {
+  display: flex;
+  color: var(--blue);
+  justify-content: center;
+  border: 1px solid var(--blue);
+  border-radius: 10px 0 0 10px;
+  width: 70%;
+  background-color: transparent;
+  height: 100%;
+  align-items: center;
+  padding: 1%;
+  transition: 0.2s linear;
+}
+.buy-btn:not(.disabled):hover {
+  background-color: var(--blue);
+  color: var(--bg);
+  cursor: pointer;
+}
+.price {
+  display: flex;
+  border-right: none;
+  justify-content: center;
+  align-items: center;
+  padding: 1%;
+  color: var(--money-green);
+  width: 30%;
+  border-top: 1px solid var(--money-green);
+  border-right: 1px solid var(--money-green);
+  border-bottom: 1px solid var(--money-green);
+  border-radius: 0 10px 10px 0;
+  height: 100%;
+}
+.amount {
+  font-size: 300%;
+  align-items: center;
+}
+.unlock-name::after {
+  content: "";
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid white;
+}
+.selected {
+  background-color: white;
+  color: var(--bg);
+}
+.topbar-unlock div {
+  padding: 2%;
+  font-size: 100%;
+  transition: 0.2s linear;
+  border: 1px solid white;
+  border-radius: 10px;
 }
