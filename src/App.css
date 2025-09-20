@@ -1,8 +1,12 @@
 :root {
   --money-green: #adebb3;
+  --light-green: #f0fff0;
   --blue: #9da3ff;
-  --yellow: #ffce1b;
+  --yellow: #ffc067;
+  --light-purple: #e0b0ff;
+  --light-yellow: #f8de7e;
   --bg: #242424;
+  --light-blue: #b5c7eb;
   --secondary: #282828;
   --tertiary: #393939;
   --disabled: #d3d3d3;
@@ -43,6 +47,132 @@
 .unlock-type:hover {
   cursor: pointer;
 }
+.item {
+  width: 100%;
+  height: 25%;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.item-desc {
+  height: 70%;
+  display: flex;
+  position: relative;
+  border-radius: 10px 10px 0 0;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 2% 2% 1% 2%;
+}
+.item-buy {
+  border: 1px solid var(--money-green);
+  border-radius: 0 0 10px 10px;
+  height: 30%;
+  color: var(--money-green);
+  display: flex;
+  align-items: center;
+  user-select: none;
+  justify-content: center;
+  transition: 0.2s linear;
+}
+.ingredients-tab {
+  border-right: 1px solid var(--tertiary);
+  padding-right: 5%;
+}
+.switch-tab {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  gap: 5%;
+  width: 100%;
+}
+.item-buy:hover {
+  background-color: var(--money-green);
+  color: var(--secondary);
+  cursor: pointer;
+}
+.rarity {
+  position: absolute;
+  top: 1%;
+  left: 1%;
+  padding: 0.2% 1% 0.2% 1%;
+  font-size: 75%;
+  border-radius: 5px;
+}
+.common-rarity {
+  color: var(--light-green);
+}
+.rare-rarity {
+  color: var(--light-blue);
+}
+.epic-rarity {
+  color: var(--light-purple);
+}
+.legendary-rarity {
+  color: var(--light-yellow);
+}
+.item-price {
+  margin-left: auto;
+  padding: 0.2% 1% 0.2% 1%;
+  font-size: 150%;
+  border-radius: 5px;
+}
+.common {
+  border-left: 1px solid var(--light-green);
+  border-right: 1px solid var(--light-green);
+  border-top: 1px solid var(--light-green);
+}
+.common-name {
+  color: var(--light-green);
+}
+.common-price {
+  background-color: var(--light-green);
+  color: var(--secondary);
+}
+.epic {
+  border-left: 1px solid var(--light-purple);
+  border-right: 1px solid var(--light-purple);
+  border-top: 1px solid var(--light-purple);
+}
+.epic-name {
+  color: var(--light-purple);
+}
+.epic-price {
+  background-color: var(--light-purple);
+  color: var(--secondary);
+}
+.rare {
+  border-left: 1px solid var(--light-blue);
+  border-right: 1px solid var(--light-blue);
+  border-top: 1px solid var(--light-blue);
+}
+.rare-name {
+  color: var(--light-blue);
+}
+.rare-price {
+  background-color: var(--light-blue);
+  color: var(--secondary);
+}
+.legendary {
+  border-left: 1px solid var(--light-yellow);
+  border-right: 1px solid var(--light-yellow);
+  border-top: 1px solid var(--light-yellow);
+}
+.legendary-name {
+  color: var(--light-yellow);
+}
+.legendary-price {
+  background-color: var(--light-yellow);
+  color: var(--secondary);
+}
+.common-price {
+  background-color: var(--light-green);
+  color: var(--secondary);
+}
+.item-name {
+  font-size: 200%;
+}
 .unlock-header {
   font-size: 150%;
   height: 10vh;
@@ -52,6 +182,7 @@
   border-radius: 10px;
   margin-bottom: 2.5%;
   display: flex;
+  width: 100%;
   justify-content: center;
   align-items: center;
 }
@@ -64,7 +195,6 @@
   flex-direction: row;
   align-items: center;
   height: 100%;
-  margin-left: 2.5%;
   justify-content: flex-start;
 }
 
@@ -88,26 +218,24 @@
 }
 .topbar-unlock .pa-change:hover {
   background-color: white;
-  color: var(--bg);
+  color: var(--secondary);
   cursor: pointer;
   transform: scale(1.05);
 }
 .locked {
-  width: 90%;
-  height: 30%;
-  font-size: 1.25vw;
-  margin-top: 2.5%;
+  width: 100%;
+  padding: 2%;
+  font-size: 125%;
+  box-sizing: border-box;
   display: flex;
   flex-shrink: 0;
   font-weight: bold;
-  color: var(--bg);
-  z-index: 3;
+  color: var(--secondary);
+  background-color: var(--yellow);
   justify-content: center;
   align-items: center;
-  background-color: var(--yellow);
   border-radius: 10px;
   text-align: center;
-  position: absolute;
 }
 .locked span {
   z-index: 3;
@@ -142,11 +270,9 @@
   justify-content: center;
   user-select: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   position: relative;
-}
-.blur {
-  filter: blur(5px);
 }
 .unlock-name {
   font-size: 200%;
@@ -203,7 +329,7 @@
 }
 .buy-btn:not(.unusable):hover {
   background-color: var(--blue);
-  color: var(--bg);
+  color: var(--secondary);
 
   cursor: pointer;
 }
@@ -234,13 +360,14 @@
 }
 .selected {
   background-color: white;
-  color: var(--bg);
+  color: var(--secondary);
+  transform: scale(1.05);
 }
 .topbar-unlock .pa-change {
   padding: 2% 4% 2% 4%;
   display: flex;
   font-size: 100%;
-  transition: 0.2s ease-in-out;
+  transition: 0.2s linear;
   border: 1px solid white;
   border-radius: 10px;
 }
