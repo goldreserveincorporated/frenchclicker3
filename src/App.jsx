@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUnlock } from '@fortawesome/free-solid-svg-icons'
+import { faIndustry } from '@fortawesome/free-solid-svg-icons'
+import { faStore } from '@fortawesome/free-solid-svg-icons'
+import { faTruck } from '@fortawesome/free-solid-svg-icons'
 var croissantplurals = {
- chef: 'chefs',
- bakery: 'bakeries',
- market: 'markets',
- factory:'factories',
- industry: 'industries'
+ chef: 'Chefs',
+ bakery: 'Bakeries',
+ market: 'Markets',
+ factory:'Factories',
+ industry: 'Industries'
 }
 var croissantunlockdata = {
 chef: {price: 100, required: 0},
@@ -45,6 +48,10 @@ const [purchaseamt, setPurchaseamt] = useState(1);
 const purchasechange = (amt) => {
  Purchaseamount = amt;
  setPurchaseamt(amt);
+}
+const [unlockui, changeui] = useState(1);
+const unlockuichange = (unlockuitype) => {
+ changeui(unlockuitype);
 }
 const unlockpricechange = (unlock, change) => {
  pricechange({
@@ -134,10 +141,7 @@ function Croissantunlockshop() {
           </div>
           <div className="buyarea">
             <div
-              className="buy-btn"
-              onClick={() =>
-                purchasecroissant(key, croissantunlockprices[key])
-              }
+              className="buy-btn unusable"
             >
               Purchase {purchaseamt}
             </div>
@@ -152,9 +156,15 @@ function Croissantunlockshop() {
 
 
  function Uc(type) {
+
  if (croissantunlocks[type.unlock]<parseInt(type.required)){
    return(<div className='locked'><span><FontAwesomeIcon icon={faUnlock} />Buy {parseInt(type.required) - croissantunlocks[type.unlock]} more {croissantplurals[type.unlock]} to unlock </span></div>)
  }
+}
+function renderunlock(unlockui) {
+  if (unlockui===1) return <Croissantunlockshop />;
+  if (unlockui===2) return <div className='notready'><span>ibgoon</span></div>;
+  if (unlockui===3) return <div className='notready'><span>deliverygoon</span></div>;
 }
 
 
@@ -162,14 +172,18 @@ function Croissantunlockshop() {
    <>
 
     <div className='unlock-container'>
-      <div className='unlock-header'>Unlocks</div>
+      <div className='unlock-header'>
+        <div className={unlockui===1?'unlock-type uiselected':'unlock-type'} onClick={() => unlockuichange(1)}><FontAwesomeIcon icon={faIndustry} /> Production</div>
+      <div className={unlockui===2?'unlock-type uiselected':'unlock-type'} onClick={() => unlockuichange(2)}><FontAwesomeIcon icon={faStore} /> Store</div>
+      <div className={unlockui===3?'unlock-type uiselected':'unlock-type'} onClick={() => unlockuichange(3)}><FontAwesomeIcon icon={faTruck} />Delivery</div>
+      </div>
      <div className="topbar-unlock"><div className='pa-container'><span>Purchase</span><div className={purchaseamt===1? 'selected pa-change':'pa-change'} onClick={() => purchasechange(1)}>1</div><div className={purchaseamt===10? 'selected pa-change':'pa-change'} onClick={() => purchasechange(10)}>10</div><div className={purchaseamt===100? 'selected pa-change':'pa-change'} onClick={() => purchasechange(100)}>100</div><div className={purchaseamt==='Max'? 'selected pa-change':'pa-change'} onClick={() => purchasechange('Max')}>Max</div>
      </div><div className='selection-container'></div>
 
      </div>
      <div className='main-unlock'>
-      <Croissantunlockshop />
-  
+{renderunlock(unlockui)}
+
      </div>
     </div>
    </>

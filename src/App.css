@@ -1,9 +1,12 @@
 :root {
   --money-green: #adebb3;
-  --blue: #9ba2ff;
-  --yellow: #ffde21;
+  --blue: #9da3ff;
+  --yellow: #ffce1b;
   --bg: #242424;
+  --secondary: #282828;
+  --tertiary: #393939;
   --disabled: #d3d3d3;
+  --text-secondary: #bdbdbd;
 }
 .unlock-container {
   display: flex;
@@ -13,13 +16,44 @@
   margin: 2.5%;
   position: relative;
 }
+.unlock-type {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 5%;
+  height: 100%;
+  transition: 0.2s ease-in-out;
+}
+.unlock-type:not(.uiselected):hover::after {
+  content: "";
+  width: 50%;
+}
+.uiselected::after {
+  content: "";
+  width: 75% !important;
+}
+.unlock-type::after {
+  content: "";
+  margin-top: 2.5%;
+  transition: 0.2s ease-out;
+  border-bottom: 1px solid white;
+  width: 0;
+}
+.unlock-type:hover {
+  cursor: pointer;
+}
 .unlock-header {
-  font-size: 300%;
+  font-size: 150%;
+  height: 10vh;
   font-weight: bold;
-  text-align: center;
+  background-color: var(--secondary);
+  border: 1px solid var(--tertiary);
   border-radius: 10px;
   margin-bottom: 2.5%;
-  border: 1px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .disabled {
   display: none !important;
@@ -40,9 +74,10 @@
   box-sizing: border-box;
   flex-direction: row;
   color: white;
-  border-right: 1px solid white;
-  border-left: 1px solid white;
-  border-top: 1px solid white;
+  background-color: var(--secondary);
+  border-right: 1px solid var(--tertiary);
+  border-left: 1px solid var(--tertiary);
+  border-top: 1px solid var(--tertiary);
   width: 100%;
   padding: 2.5%;
   border-radius: 10px 10px 0 0;
@@ -55,23 +90,27 @@
   background-color: white;
   color: var(--bg);
   cursor: pointer;
+  transform: scale(1.05);
 }
 .locked {
   width: 90%;
-  height: 50%;
+  height: 30%;
   font-size: 1.25vw;
   margin-top: 2.5%;
   display: flex;
   flex-shrink: 0;
   font-weight: bold;
   color: var(--bg);
-  z-index: 2;
+  z-index: 3;
   justify-content: center;
   align-items: center;
   background-color: var(--yellow);
   border-radius: 10px;
   text-align: center;
   position: absolute;
+}
+.locked span {
+  z-index: 3;
 }
 
 .main-unlock {
@@ -81,20 +120,14 @@
   box-sizing: border-box;
   flex-direction: column;
   display: flex;
-  height: 70vh;
+  height: 75vh;
   align-items: center;
   padding: 5%;
-  border: 1px solid white;
+  border-radius: 0 0 10px 10px;
+  background-color: var(--secondary);
+  border: 1px solid var(--tertiary);
 }
-.divider {
-  border-bottom: 1px solid white;
-  background-color: transparent;
-  width: 100%;
-  position: absolute;
-  left: 75%;
-  top: 5%;
-  transform: translate(-50%, -50%);
-}
+
 .unlock {
   width: 100%;
 
@@ -107,6 +140,7 @@
 .locked-container {
   width: 100%;
   justify-content: center;
+  user-select: none;
   display: flex;
   align-items: center;
   position: relative;
@@ -119,13 +153,16 @@
 }
 .info {
   width: 100%;
+  margin-bottom: 2.5%;
   display: flex;
   justify-content: space-between;
   flex-direction: row;
 }
 .description {
+  margin-top: 2.5%;
   display: flex;
   white-space: nowrap;
+  color: var(--text-secondary);
   font-size: clamp(75%, 125%, 150%);
   align-items: center;
 }
@@ -161,12 +198,13 @@
   background-color: transparent;
   height: 100%;
   align-items: center;
-  padding: 1%;
+  padding: 2%;
   transition: 0.2s linear;
 }
-.buy-btn:not(.disabled):hover {
+.buy-btn:not(.unusable):hover {
   background-color: var(--blue);
   color: var(--bg);
+
   cursor: pointer;
 }
 .price {
@@ -174,7 +212,7 @@
   border-right: none;
   justify-content: center;
   align-items: center;
-  padding: 1%;
+  padding: 2%;
   color: var(--money-green);
   width: 30%;
   border-top: 1px solid var(--money-green);
@@ -184,12 +222,13 @@
   height: 100%;
 }
 .amount {
-  font-size: 300%;
+  font-size: 350%;
   align-items: center;
 }
 .unlock-name::after {
   content: "";
   display: block;
+  margin-top: 2.5%;
   width: 100%;
   border-bottom: 1px solid white;
 }
@@ -198,9 +237,10 @@
   color: var(--bg);
 }
 .topbar-unlock .pa-change {
-  padding: 2%;
+  padding: 2% 4% 2% 4%;
+  display: flex;
   font-size: 100%;
-  transition: 0.2s linear;
+  transition: 0.2s ease-in-out;
   border: 1px solid white;
   border-radius: 10px;
 }
