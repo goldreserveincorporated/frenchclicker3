@@ -6,8 +6,12 @@ import {
   faIndustry,
   faStore,
   faCircleUp,
+  faRotateRight,
+  faCircle,
+  faStar,
+  faDiamond,
+  faChevronDown
 } from "@fortawesome/free-solid-svg-icons";
-
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -26,18 +30,15 @@ function shuffleStore(entries, rarityWeight) {
     .sort((a, b) => b.sortValue - a.sortValue)
     .map(({ key, value }) => [key, value]);
 }
-function priceCalculation(rarity){
-  if(rarity=='common'){
-    return Math.floor(Math.random() * (300 - 150) ) + 150;
+function priceCalculation(rarity) {
+  if (rarity == "basic") {
+    return Math.floor(Math.random() * (300 - 150)) + 150;
   }
-    if(rarity=='rare'){
-    return Math.floor(Math.random() * (750 - 500) ) + 500;
+  if (rarity == "premium") {
+    return Math.floor(Math.random() * (750 - 500)) + 500;
   }
-    if(rarity=='epic'){
-    return Math.floor(Math.random() * (1500 - 1000) ) + 1000;
-  }
-    if(rarity=='legendary'){
-    return Math.floor(Math.random() * (5000 - 4000) ) + 4000;
+  if (rarity == "deluxe") {
+    return Math.floor(Math.random() * (5000 - 4000)) + 4000;
   }
 }
 
@@ -50,14 +51,18 @@ const croissantPlurals = {
 };
 
 const croissantIngredients = {
-  organiccheese: { name: "Organic Cheese", rarity: "common" },
-  flour: { name: "Flour", rarity: "common" },
-  brownsugar: { name: "Brown Sugar", rarity: "common"},
-  castorsugar: { name: "Castor Sugar", rarity: "common"},
-  frenchgreysalt: { name: "French Grey Salt", rarity: "rare" },
-  highqualitybutter: { name: "High-Quality Butter", rarity: "rare"},
-  blacktruffle: { name: "Black Truffle", rarity: "epic" },
-  whitepastry: { name: "White Pastry", rarity: "legendary"},
+  cheese: { name: "Cheese", rarity: "basic", img: "cheese" },
+  flour: { name: "Wheat Flour", rarity: "basic", img: "flour" },
+  sugar: { name: "Caster Sugar", rarity: "basic", img: "sugar" },
+  salt: { name: "French Salt", rarity: "basic", img: "salt" },
+  butter: { name: "Butter", rarity: "basic", img: "butter" },
+  blacktruffle: { name: "Black Truffle", rarity: "premium", img: "blacktruffle" },
+  puffpastry: { name: "Puff Pastry", rarity: "basic", img: "pastry" },
+  whitetruffle: {
+    name: "White Truffle",
+    rarity: "deluxe",
+    img: "whitetruffle",
+  },
 };
 
 const croissantUnlockData = {
@@ -77,20 +82,26 @@ const croissantStats = {
 };
 
 const rarityWeight = {
-  common: 5,
-  rare: 2,
-  epic: 1,
-  legendary: 0.5,
+  basic: 5,
+  premium: 5,
+  deluxe: 5,
 };
-
+function calculateMax(price, money) {
+  if (money != 0) {
+    let amount = Math.floor(money / price);
+    return amount;
+  } else {
+    return 0;
+  }
+}
 function LockedCard({ prevKey, required, unlockAmount }) {
   const remaining = required - unlockAmount[prevKey];
   return (
     <div className="locked">
-      <span>
+      <div>
         <FontAwesomeIcon icon={faUnlock} />
         Buy {remaining} more {croissantPlurals[prevKey]} to unlock
-      </span>
+      </div>
     </div>
   );
 }
@@ -100,6 +111,7 @@ function CroissantUnlockShop({
   unlockPrices,
   purchaseAmt,
   onPurchase,
+  money,
 }) {
   const entries = Object.entries(croissantUnlockData);
 
@@ -137,7 +149,10 @@ function CroissantUnlockShop({
               className="buy-btn"
               onClick={() => onPurchase(key, unlockPrices[key])}
             >
-              Purchase {purchaseAmt}
+              Purchase{" "}
+              {purchaseAmt === "Max"
+                ? `Max (${calculateMax(unlockPrices[key], money)})`
+                : purchaseAmt}
             </div>
             <div className="price">${unlockPrices[key]}</div>
           </div>
@@ -148,41 +163,63 @@ function CroissantUnlockShop({
     if (index === firstLockedIndex) {
       const [prevKey] = entries[index - 1];
       return (
-        <div className="locked-container" >
+        <div className=" unlock">
           <div className="info">
             <div className="left-info">
               <span className="unlock-name">
                 Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
               </span>
               <div className="description">
-                +{croissantStats[key].cps} Croissants
+                +{croissantStats[key].cps} Croissants/s
               </div>
             </div>
           </div>
-          <LockedCard prevKey={prevKey} required={croissantUnlockData[key].required} unlockAmount={unlockCounts}/>
-          </div>
-
+          <LockedCard
+            prevKey={prevKey}
+            required={croissantUnlockData[key].required}
+            unlockAmount={unlockCounts}
+          />
+        </div>
       );
     }
 
-    return null; 
+    return null;
   });
 }
 
+function getRarityIcon(rarity) {
+  if (rarity == "basic") {
+    return faCircle;
+  }
+  if (rarity == "premium") {
+    return faDiamond;
+  }
+  if (rarity == "deluxe") {
+    return faStar;
+  }
+}
 function RenderStore({ items }) {
-console.log(items)
   return (
     <>
       {items.map((item) => (
         <div className="item">
           <div className={`item-desc ${item.rarity}`}>
-            <span className={`rarity ${item.rarity}-rarity`}>
-              {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+            <div className="item-info">
+              <span className={`item-name ${item.rarity}-name`}>
+                {item.name}
+              </span>
+              <div className={`rarity ${item.rarity}-rarity`}>
+                <FontAwesomeIcon
+                  className="rarity-icon"
+                  icon={getRarityIcon(item.rarity)}
+                />
+                {String(item.rarity).charAt(0).toUpperCase() +
+                  String(item.rarity).slice(1)}
+              </div>
+            </div>
+            <span className={`item-price ${item.rarity}-price`}>
+              ${item.price}
             </span>
-            <span className={`item-name ${item.rarity}-name`}>
-              {item.name}
-            </span>
-            <span className={`item-price ${item.rarity}-price`}>${item.price}</span>
           </div>
           <div className="item-buy">Purchase</div>
         </div>
@@ -209,7 +246,7 @@ function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining }) {
     );
   }
   if (activeTab === 2) {
-    return <span>Market Reset in: {formatTime(timeRemaining)}</span>;
+    return <span>Market Reset in {formatTime(timeRemaining)}</span>;
   }
   if (activeTab === 3) {
     return (
@@ -250,9 +287,20 @@ function Header({ activeTab, setActiveTab }) {
     </div>
   );
 }
-
+function StatsHeader({sc, scChange}) {
+  console.log(sc)
+  return (
+    <div className="stats-header">
+      <div className="stats-select">
+        <span className="stat-header">Croissants</span>
+        <div className={sc===1?"stat-change sc-selected":"stat-change"} onClick={()=>scChange(sc===1?0:1)}><FontAwesomeIcon icon={faChevronDown} /></div>
+      </div>
+    </div>
+  );
+}
 function App() {
   const [money, setMoney] = useState(10000);
+
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmt, setPurchaseAmt] = useState(1);
 
@@ -274,16 +322,18 @@ function App() {
 
   const [marketItems, setMarketItems] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
-
+  const [scSelected, setscSelected] = useState(0);
   useEffect(() => {
     const resetMarket = () => {
       const entries = Object.entries(croissantIngredients);
-      const newItems = shuffleStore(entries, rarityWeight).slice(0, 4).map(([key, value]) => ({
-      key,
-      ...value,
-      price: priceCalculation(value.rarity)
-    }));
-      console.log(newItems)
+      const newItems = shuffleStore(entries, rarityWeight)
+        .slice(0, 4)
+        .map(([key, value]) => ({
+          key,
+          ...value,
+          price: priceCalculation(value.rarity),
+        }));
+      console.log(newItems);
       setMarketItems(newItems);
       setTimeRemaining(120);
     };
@@ -323,7 +373,8 @@ function App() {
   };
 
   return (
-    <div className="unlock-container">
+    <>
+    <div className="container">
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="topbar-unlock">
         <Topbar
@@ -340,15 +391,20 @@ function App() {
             unlockPrices={unlockPrices}
             purchaseAmt={purchaseAmt}
             onPurchase={handlePurchase}
+            money={money}
           />
         )}
         {activeTab === 2 && (
           <RenderStore items={marketItems} timeRemaining={timeRemaining} />
         )}
-        {activeTab === 3 && <div>ENIGGER</div>}
+        {activeTab === 3 && <div>goon</div>}
       </div>
     </div>
-  );
-}
-
+<div className="container">
+   <StatsHeader sc={scSelected} scChange = {setscSelected}/>
+   <div className="main-stats"></div>
+    </div>
+    </>
+      )
+    }
 export default App;

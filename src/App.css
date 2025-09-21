@@ -5,19 +5,21 @@
   --yellow: #ffc067;
   --light-purple: #e0b0ff;
   --light-yellow: #f8de7e;
-  --bg: #242424;
+  --french-blue: #0018a8;
+  --french-red: #ed2e38;
   --light-blue: #b5c7eb;
-  --secondary: #282828;
-  --tertiary: #393939;
-  --disabled: #d3d3d3;
+  --secondary: #272727;
+  --mainbg: #232323;
+  --tertiary: #383838;
   --text-secondary: #bdbdbd;
 }
-.unlock-container {
+.container {
   display: flex;
-  justify-content: center;
   flex-direction: column;
   width: 30vw;
-  margin: 2.5%;
+  height: 100%;
+  padding: 1vw;
+  box-sizing: border-box;
   position: relative;
 }
 .unlock-type {
@@ -28,6 +30,14 @@
   margin: 5%;
   height: 100%;
   transition: 0.2s ease-in-out;
+}
+.stats-select {
+  display: flex;
+  justify-content: space-between;
+  padding: 5%;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
 .unlock-type:not(.uiselected):hover::after {
   content: "";
@@ -50,6 +60,7 @@
 .item {
   width: 100%;
   height: 25%;
+  background-color: var(--secondary);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -62,7 +73,7 @@
   justify-content: flex-start;
   align-items: center;
   box-sizing: border-box;
-  padding: 2% 2% 1% 2%;
+  padding: 2% 2% 2% 2%;
 }
 .item-buy {
   border: 1px solid var(--money-green);
@@ -93,23 +104,33 @@
   cursor: pointer;
 }
 .rarity {
-  position: absolute;
-  top: 1%;
-  left: 1%;
-  padding: 0.2% 1% 0.2% 1%;
-  font-size: 75%;
+  font-size: 80%;
+  display: flex;
+  align-items: center;
+  gap: 1%;
+  color: var(--text-secondary);
   border-radius: 5px;
 }
-.common-rarity {
-  color: var(--light-green);
+.rarity-icon {
+  font-size: 60%;
 }
-.rare-rarity {
+.item-info {
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+.basic-rarity {
   color: var(--light-blue);
 }
-.epic-rarity {
+.premium-rarity {
   color: var(--light-purple);
 }
-.legendary-rarity {
+.basic {
+  border-top: 1px solid var(--light-blue);
+  border-right: 1px solid var(--light-blue);
+  border-left: 1px solid var(--light-blue);
+}
+.deluxe-rarity {
   color: var(--light-yellow);
 }
 .item-price {
@@ -118,56 +139,41 @@
   font-size: 150%;
   border-radius: 5px;
 }
-.common {
-  border-left: 1px solid var(--light-green);
-  border-right: 1px solid var(--light-green);
-  border-top: 1px solid var(--light-green);
+
+.basic-name {
+  color: var(--light-blue);
 }
-.common-name {
-  color: var(--light-green);
-}
-.common-price {
-  background-color: var(--light-green);
+.basic-price {
+  background-color: var(--light-blue);
   color: var(--secondary);
 }
-.epic {
+
+.premium {
   border-left: 1px solid var(--light-purple);
   border-right: 1px solid var(--light-purple);
   border-top: 1px solid var(--light-purple);
 }
-.epic-name {
+.premium-name {
   color: var(--light-purple);
 }
-.epic-price {
+.premium-price {
   background-color: var(--light-purple);
   color: var(--secondary);
 }
-.rare {
-  border-left: 1px solid var(--light-blue);
-  border-right: 1px solid var(--light-blue);
-  border-top: 1px solid var(--light-blue);
-}
-.rare-name {
-  color: var(--light-blue);
-}
-.rare-price {
-  background-color: var(--light-blue);
-  color: var(--secondary);
-}
-.legendary {
+.deluxe {
   border-left: 1px solid var(--light-yellow);
   border-right: 1px solid var(--light-yellow);
   border-top: 1px solid var(--light-yellow);
 }
-.legendary-name {
+.deluxe-name {
   color: var(--light-yellow);
 }
-.legendary-price {
+.deluxe-price {
   background-color: var(--light-yellow);
   color: var(--secondary);
 }
-.common-price {
-  background-color: var(--light-green);
+.basic-price {
+  background-color: var(--light-blue);
   color: var(--secondary);
 }
 .item-name {
@@ -184,6 +190,32 @@
   display: flex;
   width: 100%;
   justify-content: center;
+  align-items: center;
+}
+.stat-header {
+  font-size: 250%;
+}
+.stat-change {
+  border-radius: 10px;
+  padding: 1%;
+  font-size: 200%;
+  transition: 0.4s ease-in-out;
+}
+.stat-change:hover {
+  cursor: pointer;
+}
+.sc-selected {
+  transform: rotateZ(180deg);
+}
+.stats-header {
+  height: 10vh;
+  font-weight: bold;
+  background-color: var(--secondary);
+  border: 1px solid var(--tertiary);
+  border-radius: 10px;
+  margin-bottom: 2.5%;
+  display: flex;
+  width: 100%;
   align-items: center;
 }
 .disabled {
@@ -220,58 +252,57 @@
   background-color: white;
   color: var(--secondary);
   cursor: pointer;
-  transform: scale(1.05);
 }
 .locked {
-  width: 100%;
-  padding: 2%;
-  font-size: 125%;
-  box-sizing: border-box;
   display: flex;
-  flex-shrink: 0;
-  font-weight: bold;
-  color: var(--secondary);
-  background-color: var(--yellow);
-  justify-content: center;
   align-items: center;
-  border-radius: 10px;
-  text-align: center;
+  margin-top: 2.5%;
+  width: 100%;
+  user-select: none;
+  height: 15%;
+  font-size: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  justify-content: center;
 }
-.locked span {
-  z-index: 3;
+.locked div {
+  font-weight: bold;
+  background-color: var(--yellow);
+  display: flex;
+  z-index: 2;
+  justify-content: center;
+  color: var(--secondary);
+  border-radius: 10px;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  padding: 2%;
 }
 
 .main-unlock {
   gap: 5%;
   width: 100%;
+  height: 100%;
   overflow-y: scroll;
   box-sizing: border-box;
   flex-direction: column;
   display: flex;
-  height: 75vh;
   align-items: center;
   padding: 5%;
   border-radius: 0 0 10px 10px;
-  background-color: var(--secondary);
+  background-color: var(--mainbg);
   border: 1px solid var(--tertiary);
 }
 
 .unlock {
   width: 100%;
-
-  /* border: 1px solid white; */
+  background-color: var(--secondary);
+  border: 1px solid var(--tertiary);
   border-radius: 10px;
+  padding: 2.5%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-.locked-container {
-  width: 100%;
-  justify-content: center;
-  user-select: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   position: relative;
 }
 .unlock-name {
@@ -356,12 +387,11 @@
   display: block;
   margin-top: 2.5%;
   width: 100%;
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid rgb(78, 78, 78);
 }
 .selected {
   background-color: white;
   color: var(--secondary);
-  transform: scale(1.05);
 }
 .topbar-unlock .pa-change {
   padding: 2% 4% 2% 4%;
