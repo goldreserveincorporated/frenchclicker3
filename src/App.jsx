@@ -10,8 +10,12 @@ import {
   faCircle,
   faStar,
   faDiamond,
-  faChevronDown
+  faChevronDown,
+  faTruck,
+  faHammer
 } from "@fortawesome/free-solid-svg-icons";
+import { HugeiconsIcon } from '@hugeicons/react';
+import { OvenIcon } from '@hugeicons/core-free-icons';
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -132,6 +136,8 @@ function CroissantUnlockShop({
   unlockPrices,
   purchaseAmt,
   onPurchase,
+  addProduction,
+  currentProduction,
   money,
 }) {
   const entries = Object.entries(croissantUnlockData);
@@ -168,7 +174,7 @@ function CroissantUnlockShop({
           <div className="buyarea">
             <div
               className="buy-btn"
-              onClick={() => onPurchase(key, unlockPrices[key])}
+              onClick={() => onPurchase(key, unlockPrices[key], addProduction, currentProduction)}
             >
               Purchase{" "}
               {purchaseAmt === "Max"
@@ -323,8 +329,8 @@ function StatsHeader({sc, scChange}) {
   );
 }
 function App() {
-  const [money, setMoney] = useState(54632756432);
-
+  const [money, setMoney] = useState(500);
+  const [ProductionAmt, setProductionAmt] = useState(0);
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmt, setPurchaseAmt] = useState(1);
 
@@ -347,6 +353,8 @@ function App() {
   const [marketItems, setMarketItems] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
   const [scSelected, setscSelected] = useState(0);
+  const [croissantCount, setCroissantCount] = useState(0);
+  const [productionProgress, setProductionProgress] = useState(0);
   useEffect(() => {
     const resetMarket = () => {
       const entries = Object.entries(croissantIngredients);
@@ -361,6 +369,7 @@ function App() {
       setMarketItems(newItems);
       setTimeRemaining(120);
     };
+    
 
     resetMarket();
 
@@ -373,11 +382,24 @@ function App() {
         return prev - 1;
       });
     }, 1000);
+    
 
     return () => clearInterval(interval);
   }, []);
-
-  const handlePurchase = (key, price) => {
+  useEffect(() => {
+  const interval = setInterval(() => {
+  setCroissantCount((prev) => prev + ProductionAmt);
+  }, 1000);
+  return () => clearInterval(interval);
+}, [ProductionAmt]);
+  useEffect(() => {
+  const interval = setInterval(() => {
+  setMoney((prev) => prev + croissantCount*3);
+  setCroissantCount(0)
+  }, 3000);
+  return () => clearInterval(interval);
+}, [croissantCount]);
+  const handlePurchase = (key, price, setProductionAmt, currentProduction) => {
     if (money < price * (purchaseAmt === "Max" ? 1 : purchaseAmt)) return;
 
     if (purchaseAmt === "Max") {
@@ -387,15 +409,21 @@ function App() {
         ...prev,
         [key]: prev[key] + maxBuy,
       }));
+      let ProductionIncrease = maxBuy*croissantStats[key].cps
+      setProductionAmt(currentProduction+ProductionIncrease)
     } else {
       setMoney((m) => m - price * purchaseAmt);
       setUnlockCounts((prev) => ({
         ...prev,
         [key]: prev[key] + purchaseAmt,
       }));
+      let ProductionIncrease = purchaseAmt*croissantStats[key].cps
+      setProductionAmt(currentProduction+ProductionIncrease)
     }
   };
-
+const addProduction= (amount)=>{
+setProductionAmt(amount)
+}
   return (
     <>
     <div className="container">
@@ -415,6 +443,8 @@ function App() {
             unlockPrices={unlockPrices}
             purchaseAmt={purchaseAmt}
             onPurchase={handlePurchase}
+            addProduction = {addProduction}
+            currentProduction = {ProductionAmt}
             money={money}
           />
         )}
@@ -427,8 +457,17 @@ function App() {
 <div className="container">
    <StatsHeader sc={scSelected} scChange = {setscSelected}/>
    <div className="main-stats">
-    <div className="stat-info"><div>Croissants</div><div>Money ${money}</div></div>
+    <div className="main-clicker"><div className="clicker" onClick={()=>{setCroissantCount(croissantCount+1)}}><div className="clicker-blue"></div><div className="clicker-white"></div><div className="clicker-red"></div></div></div>
+    <div className="stat-info"><div className="sinfo-container"><div>Croissants <span>{croissantCount}</span></div><div>Money <span>${money}</span></div><div>Production <span>{ProductionAmt}/s</span></div></div>
+    <div className="progress-container delivery"><div className="progress-mini"><FontAwesomeIcon icon={faTruck} /><div className="progress"   ></div></div>
+        </div>
+        <div className={ProductionAmt>=1?"progress-container production":"disabled"}><div className="progress-mini"><FontAwesomeIcon icon={faHammer} /><div className="progress"><div className="bar"style={{
+        width: `${productionProgress}%`,
+        transition: "width 1s linear"
+      }}></div></div></div>
+        </div>
    </div>
+    </div>
     </div>
     </>
       )
