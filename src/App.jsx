@@ -19,7 +19,19 @@ function formatTime(seconds) {
     .toString()
     .padStart(2, "0")}`;
 }
+function formatMoney(num){
+const lookup = [
+    { value: 1, symbol: "" },
+    { value: 1e3, symbol: "k" },
+    { value: 1e6, symbol: "M" },
+    { value: 1e9, symbol: "B" },
+    { value: 1e12, symbol: "T" },
 
+  ];
+  const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/;
+  const item = lookup.findLast(item => num >= item.value);
+  return item ? (num / item.value).toFixed(2).replace(regexp, "").concat(item.symbol) : "0";
+}
 function shuffleStore(entries, rarityWeight) {
   return entries
     .map(([key, value]) => ({
@@ -105,7 +117,16 @@ function LockedCard({ prevKey, required, unlockAmount }) {
     </div>
   );
 }
-
+function maxPrice(unlockPrice, money){
+let amount = calculateMax(unlockPrice, money)
+let amountFinal = amount*unlockPrice
+if(amountFinal!=0){
+  return amountFinal
+}
+else{
+  return unlockPrice
+}
+}
 function CroissantUnlockShop({
   unlockCounts,
   unlockPrices,
@@ -114,7 +135,7 @@ function CroissantUnlockShop({
   money,
 }) {
   const entries = Object.entries(croissantUnlockData);
-
+  
   // Find first locked index
   let firstLockedIndex = entries.findIndex(([key, value], index) => {
     if (index === 0) return false;
@@ -154,7 +175,10 @@ function CroissantUnlockShop({
                 ? `Max (${calculateMax(unlockPrices[key], money)})`
                 : purchaseAmt}
             </div>
-            <div className="price">${unlockPrices[key]}</div>
+            <div className="price">${purchaseAmt==="Max"?
+            formatMoney(maxPrice(unlockPrices[key], money)):
+            formatMoney(unlockPrices[key]*purchaseAmt)}
+            </div>
           </div>
         </div>
       );
@@ -299,7 +323,7 @@ function StatsHeader({sc, scChange}) {
   );
 }
 function App() {
-  const [money, setMoney] = useState(10000);
+  const [money, setMoney] = useState(54632756432);
 
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmt, setPurchaseAmt] = useState(1);
@@ -402,7 +426,9 @@ function App() {
     </div>
 <div className="container">
    <StatsHeader sc={scSelected} scChange = {setscSelected}/>
-   <div className="main-stats"></div>
+   <div className="main-stats">
+    <div className="stat-info"><div>Croissants</div><div>Money ${money}</div></div>
+   </div>
     </div>
     </>
       )
