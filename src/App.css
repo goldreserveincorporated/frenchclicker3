@@ -389,6 +389,21 @@
   width: 100%;
   border-bottom: 1px solid rgb(78, 78, 78);
 }
+.main-stats {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: 100%;
+}
+.stat-info {
+  background-color: var(--secondary);
+  border: 1px solid var(--tertiary);
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 5%;
+  display: flex;
+  gap: 5%;
+}
 .selected {
   background-color: white;
   color: var(--secondary);
