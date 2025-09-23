@@ -50,10 +50,10 @@ function priceCalculation(rarity) {
     return Math.floor(Math.random() * (300 - 150)) + 150;
   }
   if (rarity == "premium") {
-    return Math.floor(Math.random() * (750 - 500)) + 500;
+    return Math.floor(Math.random() * (1500 - 800)) + 800;
   }
   if (rarity == "deluxe") {
-    return Math.floor(Math.random() * (5000 - 4000)) + 4000;
+    return Math.floor(Math.random() * (6000 - 4000)) + 4000;
   }
 }
 
@@ -381,7 +381,7 @@ function StatsHeader({ sc, scChange }) {
   );
 }
 function App() {
-  const [money, setMoney] = useState(100000);
+  const [money, setMoney] = useState(0);
   const [ProductionAmt, setProductionAmt] = useState(0);
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmt, setPurchaseAmt] = useState(1);
