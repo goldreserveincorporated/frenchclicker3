@@ -61,6 +61,8 @@
 .sinfo-container {
   display: flex;
   gap: 5%;
+  align-items: center;
+  justify-content: center;
   font-size: 1vw;
   width: 100%;
   flex-direction: row;
@@ -294,9 +296,11 @@
   border-radius: 10px 10px 0 0;
   align-items: center;
 }
+
 .topbar-unlock span {
   font-size: 200%;
 }
+
 .topbar-unlock .pa-change:hover {
   background-color: white;
   color: var(--secondary);
@@ -450,7 +454,7 @@
   border: 1px solid var(--tertiary);
   border-radius: 10px;
   box-sizing: border-box;
-  padding: 3%;
+  padding: 2.5%;
   flex-direction: column;
   display: flex;
   width: 100%;
@@ -460,6 +464,29 @@
   width: 90%;
   height: 100%;
   border-radius: 10px;
+}
+.progress div {
+  border-radius: 10px;
+  transition: width 1s linear;
+  height: 100%;
+}
+.production-progress {
+  background-color: var(--purple);
+}
+.delivery-progress {
+  background-color: var(--gold);
+}
+.progress .running {
+  animation: fillBar linear infinite;
+}
+
+@keyframes fillBar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 .sinfo-container div {
   display: flex;
