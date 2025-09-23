@@ -124,6 +124,21 @@
   box-sizing: border-box;
   padding: 2% 2% 2% 2%;
 }
+.inv-item {
+  width: 99%;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.inv-basic {
+  border: 1px solid var(--light-blue);
+}
+.inv-deluxe {
+  border: 1px solid var(--light-yellow);
+}
+.inv-premium {
+  border: 1px solid var(--light-purple);
+}
 .item-buy {
   border: 1px solid var(--money-green);
   border-radius: 0 0 10px 10px;
@@ -135,16 +150,58 @@
   justify-content: center;
   transition: 0.2s linear;
 }
-.ingredients-tab {
-  border-right: 1px solid var(--tertiary);
-  padding-right: 5%;
+.ie-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s linear;
+  padding: 3%;
 }
+
+.ie-tab:hover span::after {
+  content: "";
+  width: 30%;
+}
+.ie-selected span::after {
+  content: "";
+  width: 50% !important;
+}
+.empty-text {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-secondary);
+}
+.ie-tab span::after {
+  content: "";
+  position: absolute;
+  bottom: -2.5%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: 0.2s ease-out;
+  border-bottom: 1px solid white;
+  width: 0;
+}
+.ie-tab.divider {
+  border-right: 1px solid var(--tertiary);
+}
+.ie-tab span {
+  z-index: 1;
+  position: relative;
+}
+
+.ie-tab:hover {
+  cursor: pointer;
+}
+
 .switch-tab {
   display: flex;
   position: relative;
   align-items: center;
   justify-content: center;
-  gap: 5%;
   width: 100%;
 }
 .item-buy:hover {
@@ -188,7 +245,21 @@
   font-size: 150%;
   border-radius: 5px;
 }
-
+.item-amount {
+  margin-left: auto;
+  padding: 0.2% 1% 0.2% 1%;
+  font-size: 250%;
+  border-radius: 5px;
+}
+.basic-amount {
+  color: var(--light-blue);
+}
+.premium-amount {
+  color: var(--light-purple);
+}
+.deluxe-amount {
+  color: var(--light-yellow);
+}
 .basic-name {
   color: var(--light-blue);
 }
@@ -270,12 +341,16 @@
 .disabled {
   display: none !important;
 }
+.marketreset {
+  padding: 3%;
+}
 .pa-container {
   display: flex;
   gap: 3%;
   flex-direction: row;
   align-items: center;
   height: 100%;
+  padding: 3%;
   justify-content: flex-start;
 }
 
@@ -290,7 +365,6 @@
   border-left: 1px solid var(--tertiary);
   border-top: 1px solid var(--tertiary);
   width: 100%;
-  padding: 2.5%;
   border-radius: 10px 10px 0 0;
   align-items: center;
 }

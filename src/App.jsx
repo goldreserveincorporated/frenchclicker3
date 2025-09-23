@@ -113,6 +113,18 @@ function calculateMax(price, money) {
     return 0;
   }
 }
+function groupIngredients(inventory) {
+  const grouped = {};
+  inventory.forEach((item) => {
+    const key = item.key; 
+    if (!grouped[key]) {
+      grouped[key] = { ...item, amount: 1 };
+    } else {
+      grouped[key].amount += 1;
+    }
+  });
+  return Object.values(grouped);
+}
 function LockedCard({ prevKey, required, unlockAmount }) {
   const remaining = required - unlockAmount[prevKey];
   return (
@@ -144,7 +156,7 @@ function buyItem(
 ) {
   if (money >= item.price) {
     changeMoney(money - item.price);
-    setInventory([...playerInventory, item.name]);
+    setInventory([...playerInventory, item]);
     setMarketItems(marketItems.filter((i) => i.key !== item.key));
   }
 }
@@ -262,6 +274,9 @@ function RenderStore({
   setMarketItems,
   marketItems,
 }) {
+  if(items.length==0){
+    return(<div className="empty-text">🤑</div>)
+  }
   return (
     <>
       {items.map((item) => (
@@ -305,8 +320,41 @@ function RenderStore({
     </>
   );
 }
-
-function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining }) {
+function RenderIngredients({
+  playerInventory,
+}) {
+  const groupedInventory = groupIngredients(playerInventory);
+  if (groupedInventory.length==0){
+    return(<div className="empty-text">😞</div>)
+  }
+  return (
+    <>
+      {groupedInventory.map((ingredient) => (
+        <div className={`inv-${ingredient.rarity} inv-item`}>
+          <div className={`item-desc`}>
+            <div className="item-info">
+              <span className={`item-name ${ingredient.rarity}-name`}>
+                {ingredient.name}
+              </span>
+              <div className={`rarity ${ingredient.rarity}-rarity`}>
+                <FontAwesomeIcon
+                  className="rarity-icon"
+                  icon={getRarityIcon(ingredient.rarity)}
+                />
+                {String(ingredient.rarity).charAt(0).toUpperCase() +
+                  String(ingredient.rarity).slice(1)}
+              </div>
+            </div>
+                        <span className={`item-amount ${ingredient.rarity}-amount`}>
+              {ingredient.amount}
+            </span>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining, ieSelected, setieSelected }) {
   if (activeTab === 1) {
     return (
       <div className="pa-container">
@@ -324,15 +372,15 @@ function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining }) {
     );
   }
   if (activeTab === 2) {
-    return <span>Market Reset in {formatTime(timeRemaining)}</span>;
+    return <span className="marketreset">Market Reset in {formatTime(timeRemaining)}</span>;
   }
   if (activeTab === 3) {
     return (
       <div className="switch-tab">
-        <div className="ingredients-tab">
+        <div className={ieSelected===1?"ie-tab ie-selected divider":"ie-tab divider"} onClick={()=>setieSelected(1)}>
           <span>Ingredients</span>
         </div>
-        <div className="enhance-tab">
+        <div className={ieSelected===2?"ie-tab ie-selected":"ie-tab"} onClick={()=>setieSelected(2)}>
           <span>Enhancements</span>
         </div>
       </div>
@@ -381,7 +429,7 @@ function StatsHeader({ sc, scChange }) {
   );
 }
 function App() {
-  const [money, setMoney] = useState(0);
+  const [money, setMoney] = useState(10000);
   const [ProductionAmt, setProductionAmt] = useState(0);
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmt, setPurchaseAmt] = useState(1);
@@ -405,6 +453,7 @@ function App() {
   const [timeRemaining, setTimeRemaining] = useState(120);
   const [scSelected, setscSelected] = useState(0);
   const [croissantCount, setCroissantCount] = useState(0);
+  const [ieSelected, setieSelected] = useState(1);
   const productionAmtRef = useRef(ProductionAmt);
   const [croissantStats, setCroissantStats] = useState({
     productionSpeed: 1,
@@ -504,10 +553,12 @@ function App() {
             purchaseAmt={purchaseAmt}
             setPurchaseAmt={setPurchaseAmt}
             timeRemaining={timeRemaining}
+            ieSelected={ieSelected}
+            setieSelected={setieSelected}
           />
         </div>
         <div className="main-unlock">
-          {activeTab === 1 && (
+          {activeTab === 1&&  (
             <CroissantUnlockShop
               unlockCounts={unlockCounts}
               unlockPrices={unlockPrices}
@@ -518,7 +569,7 @@ function App() {
               money={money}
             />
           )}
-          {activeTab === 2 && (
+          {activeTab === 2&& (
             <RenderStore
               items={marketItems}
               playerInventory={inventory}
@@ -529,7 +580,11 @@ function App() {
               marketItems={marketItems}
             />
           )}
-          {activeTab === 3 && <div>goon</div>}
+          {activeTab === 3 &&(
+            <>
+            {ieSelected===1&&<RenderIngredients playerInventory={inventory}/>}
+            {ieSelected===2&&<div>goon</div>}
+         </> )}
         </div>
       </div>
       <div className="container">
