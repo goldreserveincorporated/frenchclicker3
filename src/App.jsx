@@ -429,7 +429,7 @@ function StatsHeader({ sc, scChange }) {
   );
 }
 function App() {
-  const [money, setMoney] = useState(10000);
+  const [money, setMoney] = useState(0);
   const [ProductionAmt, setProductionAmt] = useState(0);
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmt, setPurchaseAmt] = useState(1);
