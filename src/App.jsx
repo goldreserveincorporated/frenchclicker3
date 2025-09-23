@@ -133,6 +133,21 @@ function maxPrice(unlockPrice, money) {
     return unlockPrice;
   }
 }
+function buyItem(
+  playerInventory,
+  item,
+  setInventory,
+  money,
+  changeMoney,
+  setMarketItems,
+  marketItems
+) {
+  if (money >= item.price) {
+    changeMoney(money - item.price);
+    setInventory([...playerInventory, item.name]);
+    setMarketItems(marketItems.filter((i) => i.key !== item.key));
+  }
+}
 function CroissantUnlockShop({
   unlockCounts,
   unlockPrices,
@@ -238,7 +253,15 @@ function getRarityIcon(rarity) {
     return faStar;
   }
 }
-function RenderStore({ items }) {
+function RenderStore({
+  items,
+  playerInventory,
+  setInventory,
+  money,
+  changeMoney,
+  setMarketItems,
+  marketItems,
+}) {
   return (
     <>
       {items.map((item) => (
@@ -261,7 +284,22 @@ function RenderStore({ items }) {
               ${item.price}
             </span>
           </div>
-          <div className="item-buy">Purchase</div>
+          <div
+            className="item-buy"
+            onClick={() => {
+              buyItem(
+                playerInventory,
+                item,
+                setInventory,
+                money,
+                changeMoney,
+                setMarketItems,
+                marketItems
+              );
+            }}
+          >
+            Purchase
+          </div>
         </div>
       ))}
     </>
@@ -368,21 +406,27 @@ function App() {
   const [scSelected, setscSelected] = useState(0);
   const [croissantCount, setCroissantCount] = useState(0);
   const productionAmtRef = useRef(ProductionAmt);
-  const[croissantStats, setCroissantStats]=useState({
-    productionSpeed: 1, sellSpeed: 5, price: 3, sellAmount:50
-  })
+  const [croissantStats, setCroissantStats] = useState({
+    productionSpeed: 1,
+    sellSpeed: 5,
+    price: 3,
+    sellAmount: 50,
+  });
   const [sBarKey, setsBarKey] = useState(0);
+  const [inventory, setInventory] = useState([]);
   const [pBarKey, setpBarKey] = useState(0);
   useEffect(() => {
     const sellInterval = setInterval(() => {
       console.log("sold");
-      setsBarKey(prev => prev + 1);
-    setCroissantCount((prevCount) => {
-      const soldAmount = prevCount;
-      setMoney((prevMoney) => prevMoney + soldAmount * croissantStats.price);
-      return croissantStats.sellAmount>=prevCount?0:prevCount-croissantStats.sellAmount; 
-    });
-    }, croissantStats.sellSpeed*1000);
+      setsBarKey((prev) => prev + 1);
+      setCroissantCount((prevCount) => {
+        const soldAmount = prevCount;
+        setMoney((prevMoney) => prevMoney + soldAmount * croissantStats.price);
+        return croissantStats.sellAmount >= prevCount
+          ? 0
+          : prevCount - croissantStats.sellAmount;
+      });
+    }, croissantStats.sellSpeed * 1000);
     return () => clearInterval(sellInterval);
   }, [croissantStats]);
   useEffect(() => {
@@ -414,15 +458,14 @@ function App() {
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
-  productionAmtRef.current = ProductionAmt;
-}, [ProductionAmt]);
+    productionAmtRef.current = ProductionAmt;
+  }, [ProductionAmt]);
   useEffect(() => {
-
     const produceInterval = setInterval(() => {
       console.log("produce");
       setCroissantCount((prev) => prev + productionAmtRef.current);
-      setpBarKey(prev => prev + 1);
-    }, croissantStats.productionSpeed*1000);
+      setpBarKey((prev) => prev + 1);
+    }, croissantStats.productionSpeed * 1000);
     return () => clearInterval(produceInterval);
   }, [croissantStats]);
 
@@ -476,7 +519,15 @@ function App() {
             />
           )}
           {activeTab === 2 && (
-            <RenderStore items={marketItems} timeRemaining={timeRemaining} />
+            <RenderStore
+              items={marketItems}
+              playerInventory={inventory}
+              setInventory={setInventory}
+              changeMoney={setMoney}
+              money={money}
+              setMarketItems={setMarketItems}
+              marketItems={marketItems}
+            />
           )}
           {activeTab === 3 && <div>goon</div>}
         </div>
@@ -505,22 +556,34 @@ function App() {
                 Money <span>${money}</span>
               </div>
               <div>
-                Production <span>{ProductionAmt}/{croissantStats.productionSpeed===1?'':croissantStats.productionSpeed}s</span>
-              </div>              <div>
-                Sell Rate <span>{croissantStats.sellAmount}/{croissantStats.sellSpeed}s</span>
+                Production{" "}
+                <span>
+                  {ProductionAmt}/
+                  {croissantStats.productionSpeed === 1
+                    ? ""
+                    : croissantStats.productionSpeed}
+                  s
+                </span>
+              </div>{" "}
+              <div>
+                Sell Rate{" "}
+                <span>
+                  {croissantStats.sellAmount}/{croissantStats.sellSpeed}s
+                </span>
               </div>
             </div>
             <div className="progress-container delivery">
               <div className="progress-mini">
                 <FontAwesomeIcon icon={faTruck} />
-                <div className="progress">                  
+                <div className="progress">
                   <div
-  key={sBarKey}
-                       className={"delivery-progress running"}
-                        style={{ animationDuration: `${croissantStats.sellSpeed}s` }}
-                  >
-                  </div>
-                  </div>
+                    key={sBarKey}
+                    className={"delivery-progress running"}
+                    style={{
+                      animationDuration: `${croissantStats.sellSpeed}s`,
+                    }}
+                  ></div>
+                </div>
               </div>
             </div>
             <div
@@ -534,9 +597,17 @@ function App() {
                 <FontAwesomeIcon icon={faHammer} />
                 <div className="progress">
                   <div
-                                       key={pBarKey}
-                       className={ProductionAmt > 0 ? "production-progress running" : "progress-bar"}
-                        style={{ animationDuration: `${1/croissantStats.productionSpeed}s` }}
+                    key={pBarKey}
+                    className={
+                      ProductionAmt > 0
+                        ? "production-progress running"
+                        : "progress-bar"
+                    }
+                    style={{
+                      animationDuration: `${
+                        1 / croissantStats.productionSpeed
+                      }s`,
+                    }}
                   ></div>
                 </div>
               </div>
