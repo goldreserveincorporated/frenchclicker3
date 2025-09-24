@@ -14,6 +14,7 @@ import {
   faTruck,
   faCaretUp,
   faHammer,
+  faClock
 } from "@fortawesome/free-solid-svg-icons";
 
 
@@ -99,37 +100,46 @@ const enhancementPrices = {
       { key: "butter", name: "Butter", amount: 1 },
       { key: "sugar", name: "Caster Sugar", amount: 1 },
     ],
+      l2: [
+      { key: "butter", name: "Butter", amount: 2 },
+      { key: "sugar", name: "Caster Sugar", amount: 3 },
+    ],
+      l3: [
+      { key: "blacktruffle", name: "Black Truffle", amount: 1 },
+      { key: "sugar", name: "Caster Sugar", amount: 3 },
+      { key: "whitetruffle", name: "White Truffle", amount: 3 },
+    ],
   },
 };
 
 const enhancementEffects = {
   taste: {
-    l1: { display: "1.5x Sell Rate", effect: 1.5 },
-    l2: { display: "2x Sell Rate", effect: 2 },
-    l3: { display: "2.5x Sell Rate", effect: 2.5 },
-    l4: { display: "3x Sell Rate", effect: 3 },
-    l5: { display: "5x Sell Rate", effect: 5 },
+    l1: { display: "1.5x Sell Rate", effect: 1.5, duration: 60 },
+    l2: { display: "2x Sell Rate", effect: 2,duration: 60 },
+    l3: { display: "2.5x Sell Rate", effect: 2.5,duration: 120 },
+    l4: { display: "3x Sell Rate", effect: 3,duration: 150},
+    l5: { display: "5x Sell Rate", effect: 5,duration: 210},
   },
 };
 
 const enhancements = [
   {
-    key: "taste",
+    key: "sell",
     price: enhancementPrices.taste.l1,
     effect: enhancementEffects.taste.l1,
-    name: "bonjour",
+    name: "Tastier Croissants",
   },
   {
-    key: "production",
-    price: enhancementPrices.taste.l1,
-    effect: enhancementEffects.taste.l1,
-    name: "merci",
+    key: "produce",
+    price: enhancementPrices.taste.l2,
+    effect: enhancementEffects.taste.l2,
+    name: "Faster Production",
   },
   {
-    key: "taste",
-    price: enhancementPrices.taste.l1,
-    effect: enhancementEffects.taste.l1,
-    name: "je mappelle",
+    key: "expensive",
+    price: enhancementPrices.taste.l3,
+    effect: enhancementEffects.taste.l3,
+    name: "Expensive Croissants",
   },
 ];
 
@@ -182,6 +192,7 @@ const rarityWeight = {
 };
 
 function getRarityIcon(rarity) {
+  console.log(rarity)
   if (rarity === "basic") return faCircle;
   if (rarity === "premium") return faDiamond;
   if (rarity === "deluxe") return faStar;
@@ -379,10 +390,10 @@ function IngredientsList({ playerInventory }) {
 
 function EnhancementRecipe({ enhancement, inventory }) {
   return enhancement.map((ingredient) => (
-    <div className="enhancement-ingredient" key={ingredient.key}>
-      <span className="ingredient">{ingredient.name}</span>
-      <div className="ingredient-divider"></div>
-      <span>
+    <div className={`enhancement-ingredient ${ingredients[ingredient.key].rarity}-ingredient`} key={ingredient.key}>
+      <div className="ingredient">{ingredient.name}</div>
+      <div className={`${ingredients[ingredient.key].rarity}-idivider`}></div>
+      <span className={`${getIngredientAmount(inventory, ingredient)>=ingredient.amount?'':`ecost-${ingredients[ingredient.key].rarity}`}`}>
         {getIngredientAmount(inventory, ingredient)}/{ingredient.amount}
       </span>
     </div>
@@ -392,9 +403,10 @@ function EnhancementRecipe({ enhancement, inventory }) {
 function EnhancementsList({ playerInventory }) {
   return enhancements.map((enhancement) => (
     <div className="enhancement" key={enhancement.name}>
+      <div className="enhancement-tinfo">
       <div className="enhancement-desc">
         <span className="enhancement-name">{enhancement.name}</span>
-        <span className="enhancement-info">
+        <span className={`${enhancement.key}-einfo`}>
           <FontAwesomeIcon icon={faCaretUp} /> {enhancement.effect.display}
         </span>
       </div>
@@ -405,6 +417,9 @@ function EnhancementsList({ playerInventory }) {
           inventory={playerInventory}
         />
       </div>
+      
+      </div>
+            <div className="activate-btn">Craft {`(Lasts ${enhancement.effect.duration}s)`}</div>
     </div>
   ));
 }
@@ -521,7 +536,7 @@ function handleBuyItem(
 }
 
 function App() {
-  const [money, setMoney] = useState(10000);
+  const [money, setMoney] = useState(0);
   const [productionAmount, setProductionAmount] = useState(0);
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmount, setPurchaseAmount] = useState(1);

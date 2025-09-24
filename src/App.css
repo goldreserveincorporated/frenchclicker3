@@ -1,11 +1,12 @@
 :root {
   --money-green: #adebb3;
-  --light-green: #f0fff0;
+  --light-green: #80ef80;
   --blue: #9da3ff;
   --yellow: #ffc067;
   --light-purple: #e0b0ff;
-  --gold: #efbf04;
+  --gold: #fdcb35;
   --light-yellow: #f8de7e;
+  --yellow-orange: #ffc550;
   --french-blue: #28388d;
   --french-red: #e8303e;
   --light-blue: #b5c7eb;
@@ -13,7 +14,7 @@
   --mainbg: #232323;
   --tertiary: #383838;
   --text-secondary: #bdbdbd;
-  --purple: #df75ff;
+  --purple: #f581ff;
 }
 .container {
   display: flex;
@@ -614,34 +615,74 @@
   border-radius: 10px;
 }
 .enhancement {
+  border-radius: 10px;
+  border: 1px solid var(--tertiary);
+  padding: 2.5%;
   display: flex;
-  flex-direction: row;
+  box-sizing: border-box;
+  align-items: center;
+  flex-direction: column;
   width: 100%;
 }
 .enhancement-desc {
   display: flex;
-  width: 40%;
+  align-items: center;
+  width: 45%;
   flex-direction: column;
 }
 .enhancement-name {
+  text-align: center;
   font-size: 150%;
 }
 .ingredients-header {
   font-size: 150%;
 }
 .ingredient {
+  display: flex;
+  align-items: center;
   position: relative;
 }
-.ingredient-divider {
+.basic-ingredient {
+  color: var(--light-blue);
+}
+
+.premium-ingredient {
+  color: var(--light-purple);
+}
+.deluxe-ingredient {
+  color: var(--light-yellow);
+}
+.basic-idivider {
   flex: 0.8;
-  border-bottom: 1px solid var(--text-secondary);
+  border-bottom: 1px solid var(--light-blue);
+  filter: brightness(0.5);
+  height: 0;
+}
+.premium-idivider {
+  flex: 0.8;
+  border-bottom: 1px solid var(--light-purple);
+  filter: brightness(0.5);
+  height: 0;
+}
+.enhancement-tinfo {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 3%;
+}
+.deluxe-idivider {
+  flex: 0.8;
+  border-bottom: 1px solid var(--light-yellow);
+  filter: brightness(0.5);
   height: 0;
 }
 .enhancement-cost {
   display: flex;
   flex: 1;
-  margin-left: 15%;
+  padding: 0 5% 0 5%;
+  border-left: 1px solid var(--tertiary);
   flex-direction: column;
+  max-width: 100%;
 }
 .enhancement-ingredient {
   align-items: center;
@@ -650,4 +691,42 @@
   width: 100%;
   justify-content: space-between;
   flex-direction: row;
+}
+.produce-einfo {
+  color: var(--purple);
+}
+.ecost-basic {
+  filter: brightness(0.8);
+}
+.ecost-premium {
+  filter: brightness(0.8);
+}
+.ecost-deluxe {
+  filter: brightness(0.8);
+}
+.sell-einfo {
+  color: var(--gold);
+}
+.expensive-einfo {
+  color: var(--light-green);
+}
+.activate-btn {
+  display: flex;
+  border: 1px solid var(--yellow-orange);
+  color: var(--yellow-orange);
+  padding: 1%;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 10px;
+  transition: 0.2s linear;
+}
+.activate-btn .timer-icon {
+  font-size: 80%;
+}
+.activate-btn:hover {
+  cursor: pointer;
+  background-color: var(--yellow-orange);
+  color: var(--tertiary);
 }
