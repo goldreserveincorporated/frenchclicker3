@@ -95,7 +95,7 @@ function getIngredientAmount(inventory, ingredient) {
 
 
 const enhancementPrices = {
-  taste: {
+  sell: {
     l1: [
       { key: "butter", name: "Butter", amount: 1 },
       { key: "sugar", name: "Caster Sugar", amount: 1 },
@@ -110,35 +110,77 @@ const enhancementPrices = {
       { key: "whitetruffle", name: "White Truffle", amount: 3 },
     ],
   },
+  produce: {
+    l1: [
+      { key: "butter", name: "Butter", amount: 1 },
+      { key: "sugar", name: "Caster Sugar", amount: 1 },
+    ],
+      l2: [
+      { key: "butter", name: "Butter", amount: 2 },
+      { key: "sugar", name: "Caster Sugar", amount: 3 },
+    ],
+      l3: [
+      { key: "blacktruffle", name: "Black Truffle", amount: 1 },
+      { key: "sugar", name: "Caster Sugar", amount: 3 },
+      { key: "whitetruffle", name: "White Truffle", amount: 3 },
+    ],
+  },
+    expensive: {
+    l1: [
+      { key: "butter", name: "Butter", amount: 1 },
+      { key: "sugar", name: "Caster Sugar", amount: 1 },
+    ],
+      l2: [
+      { key: "butter", name: "Butter", amount: 2 },
+      { key: "sugar", name: "Caster Sugar", amount: 3 },
+    ],
+      l5: [
+      { key: "blacktruffle", name: "Black Truffle", amount: 4 },
+      { key: "sugar", name: "Caster Sugar", amount: 10 },
+      { key: "whitetruffle", name: "White Truffle", amount: 2 },
+    ],
+  },
 };
 
 const enhancementEffects = {
-  taste: {
+  sell: {
     l1: { display: "1.5x Sell Rate", effect: 1.5, duration: 60 },
     l2: { display: "2x Sell Rate", effect: 2,duration: 60 },
     l3: { display: "2.5x Sell Rate", effect: 2.5,duration: 120 },
     l4: { display: "3x Sell Rate", effect: 3,duration: 150},
     l5: { display: "5x Sell Rate", effect: 5,duration: 210},
   },
+    produce: {
+    l1: { display: "1.2x Production", effect: 1.2, duration: 60 },
+    l2: { display: "1.5x Production", effect: 1.5,duration: 60 },
+    l3: { display: "2x Production", effect: 2,duration: 120 }
+  },
+    expensive: {
+    l1: { display: "+$1 Sell Price", effect: 1, duration: 60 },
+    l2: { display: "+$2 Sell Price", effect: 2,duration: 60 },
+    l3: { display: "+$3 Sell Price", effect: 3,duration: 120 },
+    l4: { display: "+$5 Sell Price", effect: 5,duration: 120 },
+    l5: { display: "+$6 Sell Price", effect: 6,duration: 300 }
+  },
 };
 
 const enhancements = [
   {
     key: "sell",
-    price: enhancementPrices.taste.l1,
-    effect: enhancementEffects.taste.l1,
+    price: enhancementPrices.sell.l1,
+    effect: enhancementEffects.sell.l1,
     name: "Tastier Croissants",
   },
   {
     key: "produce",
-    price: enhancementPrices.taste.l2,
-    effect: enhancementEffects.taste.l2,
-    name: "Faster Production",
+    price: enhancementPrices.produce.l2,
+    effect: enhancementEffects.produce.l2,
+    name: "Higher Production",
   },
   {
     key: "expensive",
-    price: enhancementPrices.taste.l3,
-    effect: enhancementEffects.taste.l3,
+    price: enhancementPrices.expensive.l5,
+    effect: enhancementEffects.expensive.l5,
     name: "Expensive Croissants",
   },
 ];
