@@ -12,8 +12,11 @@ import {
   faDiamond,
   faChevronDown,
   faTruck,
+  faCaretUp,
   faHammer,
 } from "@fortawesome/free-solid-svg-icons";
+
+
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -21,6 +24,7 @@ function formatTime(seconds) {
     .toString()
     .padStart(2, "0")}`;
 }
+
 function formatMoney(num) {
   const lookup = [
     { value: 1, symbol: "" },
@@ -35,7 +39,8 @@ function formatMoney(num) {
     ? (num / item.value).toFixed(2).replace(regexp, "").concat(item.symbol)
     : "0";
 }
-function shuffleStore(entries, rarityWeight) {
+
+function shuffleMarket(entries, rarityWeight) {
   return entries
     .map(([key, value]) => ({
       key,
@@ -45,17 +50,88 @@ function shuffleStore(entries, rarityWeight) {
     .sort((a, b) => b.sortValue - a.sortValue)
     .map(({ key, value }) => [key, value]);
 }
-function priceCalculation(rarity) {
-  if (rarity == "basic") {
+
+function calculatePbyR(rarity) {
+  if (rarity === "basic") {
     return Math.floor(Math.random() * (300 - 150)) + 150;
   }
-  if (rarity == "premium") {
+  if (rarity === "premium") {
     return Math.floor(Math.random() * (1500 - 800)) + 800;
   }
-  if (rarity == "deluxe") {
+  if (rarity === "deluxe") {
     return Math.floor(Math.random() * (6000 - 4000)) + 4000;
   }
 }
+
+function calculateMaxPurchase(price, money) {
+  return money !== 0 ? Math.floor(money / price) : 0;
+}
+
+function calculateTotalPrice(unlockPrice, money) {
+  const amount = calculateMaxPurchase(unlockPrice, money);
+  const total = amount * unlockPrice;
+  return total !== 0 ? total : unlockPrice;
+}
+
+function groupInventoryItems(inventory) {
+  const grouped = {};
+  inventory.forEach((item) => {
+    const key = item.key;
+    if (!grouped[key]) {
+      grouped[key] = { ...item, amount: 1 };
+    } else {
+      grouped[key].amount += 1;
+    }
+  });
+  return Object.values(grouped);
+}
+
+function getIngredientAmount(inventory, ingredient) {
+  const groupedInventory = groupInventoryItems(inventory);
+  const found = groupedInventory.find((i) => i.key === ingredient.key);
+  return found ? found.amount : 0;
+}
+
+
+const enhancementPrices = {
+  taste: {
+    l1: [
+      { key: "butter", name: "Butter", amount: 1 },
+      { key: "sugar", name: "Caster Sugar", amount: 1 },
+    ],
+  },
+};
+
+const enhancementEffects = {
+  taste: {
+    l1: { display: "1.5x Sell Rate", effect: 1.5 },
+    l2: { display: "2x Sell Rate", effect: 2 },
+    l3: { display: "2.5x Sell Rate", effect: 2.5 },
+    l4: { display: "3x Sell Rate", effect: 3 },
+    l5: { display: "5x Sell Rate", effect: 5 },
+  },
+};
+
+const enhancements = [
+  {
+    key: "taste",
+    price: enhancementPrices.taste.l1,
+    effect: enhancementEffects.taste.l1,
+    name: "bonjour",
+  },
+  {
+    key: "production",
+    price: enhancementPrices.taste.l1,
+    effect: enhancementEffects.taste.l1,
+    name: "merci",
+  },
+  {
+    key: "taste",
+    price: enhancementPrices.taste.l1,
+    effect: enhancementEffects.taste.l1,
+    name: "je mappelle",
+  },
+];
 
 const croissantPlurals = {
   chef: "Chefs",
@@ -65,8 +141,7 @@ const croissantPlurals = {
   industry: "Industries",
 };
 
-const croissantIngredients = {
-  cheese: { name: "Cheese", rarity: "basic", img: "cheese" },
+const ingredients = {
   flour: { name: "Wheat Flour", rarity: "basic", img: "flour" },
   sugar: { name: "Caster Sugar", rarity: "basic", img: "sugar" },
   salt: { name: "French Salt", rarity: "basic", img: "salt" },
@@ -92,7 +167,7 @@ const croissantUnlockData = {
   industry: { price: 10000, required: 50 },
 };
 
-const croissantUnlockStats = {
+const croissantStatsTable = {
   chef: { cps: 1 },
   bakery: { cps: 6 },
   market: { cps: 15 },
@@ -105,27 +180,14 @@ const rarityWeight = {
   premium: 5,
   deluxe: 5,
 };
-function calculateMax(price, money) {
-  if (money != 0) {
-    let amount = Math.floor(money / price);
-    return amount;
-  } else {
-    return 0;
-  }
+
+function getRarityIcon(rarity) {
+  if (rarity === "basic") return faCircle;
+  if (rarity === "premium") return faDiamond;
+  if (rarity === "deluxe") return faStar;
 }
-function groupIngredients(inventory) {
-  const grouped = {};
-  inventory.forEach((item) => {
-    const key = item.key; 
-    if (!grouped[key]) {
-      grouped[key] = { ...item, amount: 1 };
-    } else {
-      grouped[key].amount += 1;
-    }
-  });
-  return Object.values(grouped);
-}
-function LockedCard({ prevKey, required, unlockAmount }) {
+
+function Locked({ prevKey, required, unlockAmount }) {
   const remaining = required - unlockAmount[prevKey];
   return (
     <div className="locked">
@@ -136,55 +198,28 @@ function LockedCard({ prevKey, required, unlockAmount }) {
     </div>
   );
 }
-function maxPrice(unlockPrice, money) {
-  let amount = calculateMax(unlockPrice, money);
-  let amountFinal = amount * unlockPrice;
-  if (amountFinal != 0) {
-    return amountFinal;
-  } else {
-    return unlockPrice;
-  }
-}
-function buyItem(
-  playerInventory,
-  item,
-  setInventory,
-  money,
-  changeMoney,
-  setMarketItems,
-  marketItems
-) {
-  if (money >= item.price) {
-    changeMoney(money - item.price);
-    setInventory([...playerInventory, item]);
-    setMarketItems(marketItems.filter((i) => i.key !== item.key));
-  }
-}
-function CroissantUnlockShop({
-  unlockCounts,
+
+function UnlockShop({
+  unlockAmount,
   unlockPrices,
-  purchaseAmt,
+  purchaseAmount,
   onPurchase,
   addProduction,
   currentProduction,
   money,
 }) {
   const entries = Object.entries(croissantUnlockData);
-  // Find first locked index
   let firstLockedIndex = entries.findIndex(([key, value], index) => {
     if (index === 0) return false;
     const [prevKey] = entries[index - 1];
-    return unlockCounts[prevKey] < value.required;
+    return unlockAmount[prevKey] < value.required;
   });
 
-  if (firstLockedIndex === -1) {
-    firstLockedIndex = entries.length; // everything unlocked
-  }
+  if (firstLockedIndex === -1) firstLockedIndex = entries.length;
 
   return entries.map(([key, value], index) => {
-    const isUnlocked = unlockCounts[key] >= value.required;
+    const isUnlocked = unlockAmount[key] >= value.required;
 
-    // Show unlocked ones
     if (isUnlocked || index < firstLockedIndex) {
       return (
         <div className="unlock" key={key}>
@@ -194,10 +229,10 @@ function CroissantUnlockShop({
                 Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
               </span>
               <div className="description">
-                +{croissantUnlockStats[key].cps} Croissants/s
+                +{croissantStatsTable[key].cps} Croissants/s
               </div>
             </div>
-            <div className="amount">{unlockCounts[key]}</div>
+            <div className="amount">{unlockAmount[key]}</div>
           </div>
           <div className="buyarea">
             <div
@@ -212,15 +247,15 @@ function CroissantUnlockShop({
               }
             >
               Purchase{" "}
-              {purchaseAmt === "Max"
-                ? `Max (${calculateMax(unlockPrices[key], money)})`
-                : purchaseAmt}
+              {purchaseAmount === "Max"
+                ? `Max (${calculateMaxPurchase(unlockPrices[key], money)})`
+                : purchaseAmount}
             </div>
             <div className="price">
               $
-              {purchaseAmt === "Max"
-                ? formatMoney(maxPrice(unlockPrices[key], money))
-                : formatMoney(unlockPrices[key] * purchaseAmt)}
+              {purchaseAmount === "Max"
+                ? formatMoney(calculateTotalPrice(unlockPrices[key], money))
+                : formatMoney(unlockPrices[key] * purchaseAmount)}
             </div>
           </div>
         </div>
@@ -230,21 +265,21 @@ function CroissantUnlockShop({
     if (index === firstLockedIndex) {
       const [prevKey] = entries[index - 1];
       return (
-        <div className=" unlock">
+        <div className="unlock" key={key}>
           <div className="info">
             <div className="left-info">
               <span className="unlock-name">
                 Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
               </span>
               <div className="description">
-                +{croissantUnlockStats[key].cps} Croissants/s
+                +{croissantStatsTable[key].cps} Croissants/s
               </div>
             </div>
           </div>
-          <LockedCard
+          <Locked
             prevKey={prevKey}
             required={croissantUnlockData[key].required}
-            unlockAmount={unlockCounts}
+            unlockAmount={unlockAmount}
           />
         </div>
       );
@@ -254,18 +289,7 @@ function CroissantUnlockShop({
   });
 }
 
-function getRarityIcon(rarity) {
-  if (rarity == "basic") {
-    return faCircle;
-  }
-  if (rarity == "premium") {
-    return faDiamond;
-  }
-  if (rarity == "deluxe") {
-    return faStar;
-  }
-}
-function RenderStore({
+function MarketStore({
   items,
   playerInventory,
   setInventory,
@@ -274,13 +298,13 @@ function RenderStore({
   setMarketItems,
   marketItems,
 }) {
-  if(items.length==0){
-    return(<div className="empty-text">🤑</div>)
+  if (items.length === 0) {
+    return <div className="empty-text">🤑</div>;
   }
   return (
     <>
       {items.map((item) => (
-        <div className="item">
+        <div className="item" key={item.key}>
           <div className={`item-desc ${item.rarity}`}>
             <div className="item-info">
               <span className={`item-name ${item.rarity}-name`}>
@@ -291,8 +315,7 @@ function RenderStore({
                   className="rarity-icon"
                   icon={getRarityIcon(item.rarity)}
                 />
-                {String(item.rarity).charAt(0).toUpperCase() +
-                  String(item.rarity).slice(1)}
+                {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
               </div>
             </div>
             <span className={`item-price ${item.rarity}-price`}>
@@ -302,7 +325,7 @@ function RenderStore({
           <div
             className="item-buy"
             onClick={() => {
-              buyItem(
+              handleBuyItem(
                 playerInventory,
                 item,
                 setInventory,
@@ -320,17 +343,16 @@ function RenderStore({
     </>
   );
 }
-function RenderIngredients({
-  playerInventory,
-}) {
-  const groupedInventory = groupIngredients(playerInventory);
-  if (groupedInventory.length==0){
-    return(<div className="empty-text">😞</div>)
+
+function IngredientsList({ playerInventory }) {
+  const groupedInventory = groupInventoryItems(playerInventory);
+  if (groupedInventory.length === 0) {
+    return <div className="empty-text">😞</div>;
   }
   return (
     <>
       {groupedInventory.map((ingredient) => (
-        <div className={`inv-${ingredient.rarity} inv-item`}>
+        <div className={`inv-${ingredient.rarity} inv-item`} key={ingredient.key}>
           <div className={`item-desc`}>
             <div className="item-info">
               <span className={`item-name ${ingredient.rarity}-name`}>
@@ -341,11 +363,11 @@ function RenderIngredients({
                   className="rarity-icon"
                   icon={getRarityIcon(ingredient.rarity)}
                 />
-                {String(ingredient.rarity).charAt(0).toUpperCase() +
-                  String(ingredient.rarity).slice(1)}
+                {ingredient.rarity.charAt(0).toUpperCase() +
+                  ingredient.rarity.slice(1)}
               </div>
             </div>
-                        <span className={`item-amount ${ingredient.rarity}-amount`}>
+            <span className={`item-amount ${ingredient.rarity}-amount`}>
               {ingredient.amount}
             </span>
           </div>
@@ -354,7 +376,47 @@ function RenderIngredients({
     </>
   );
 }
-function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining, ieSelected, setieSelected }) {
+
+function EnhancementRecipe({ enhancement, inventory }) {
+  return enhancement.map((ingredient) => (
+    <div className="enhancement-ingredient" key={ingredient.key}>
+      <span className="ingredient">{ingredient.name}</span>
+      <div className="ingredient-divider"></div>
+      <span>
+        {getIngredientAmount(inventory, ingredient)}/{ingredient.amount}
+      </span>
+    </div>
+  ));
+}
+
+function EnhancementsList({ playerInventory }) {
+  return enhancements.map((enhancement) => (
+    <div className="enhancement" key={enhancement.name}>
+      <div className="enhancement-desc">
+        <span className="enhancement-name">{enhancement.name}</span>
+        <span className="enhancement-info">
+          <FontAwesomeIcon icon={faCaretUp} /> {enhancement.effect.display}
+        </span>
+      </div>
+      <div className="enhancement-cost">
+        <span className="ingredients-header">Recipe</span>
+        <EnhancementRecipe
+          enhancement={enhancement.price}
+          inventory={playerInventory}
+        />
+      </div>
+    </div>
+  ));
+}
+
+function TopBar({
+  activeTab,
+  purchaseAmount,
+  setPurchaseAmount,
+  timeRemaining,
+  ieSelected,
+  setIeSelected,
+}) {
   if (activeTab === 1) {
     return (
       <div className="pa-container">
@@ -362,8 +424,8 @@ function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining, ieSelec
         {[1, 10, 100, "Max"].map((amt) => (
           <div
             key={amt}
-            className={purchaseAmt === amt ? "selected pa-change" : "pa-change"}
-            onClick={() => setPurchaseAmt(amt)}
+            className={purchaseAmount === amt ? "selected pa-change" : "pa-change"}
+            onClick={() => setPurchaseAmount(amt)}
           >
             {amt}
           </div>
@@ -372,15 +434,27 @@ function Topbar({ activeTab, purchaseAmt, setPurchaseAmt, timeRemaining, ieSelec
     );
   }
   if (activeTab === 2) {
-    return <span className="marketreset">Market Reset in {formatTime(timeRemaining)}</span>;
+    return (
+      <span className="marketreset">
+        Market Reset in {formatTime(timeRemaining)}
+      </span>
+    );
   }
   if (activeTab === 3) {
     return (
       <div className="switch-tab">
-        <div className={ieSelected===1?"ie-tab ie-selected divider":"ie-tab divider"} onClick={()=>setieSelected(1)}>
+        <div
+          className={
+            ieSelected === 1 ? "ie-tab ie-selected divider" : "ie-tab divider"
+          }
+          onClick={() => setIeSelected(1)}
+        >
           <span>Ingredients</span>
         </div>
-        <div className={ieSelected===2?"ie-tab ie-selected":"ie-tab"} onClick={()=>setieSelected(2)}>
+        <div
+          className={ieSelected === 2 ? "ie-tab ie-selected" : "ie-tab"}
+          onClick={() => setIeSelected(2)}
+        >
           <span>Enhancements</span>
         </div>
       </div>
@@ -413,6 +487,7 @@ function Header({ activeTab, setActiveTab }) {
     </div>
   );
 }
+
 function StatsHeader({ sc, scChange }) {
   return (
     <div className="stats-header">
@@ -428,13 +503,30 @@ function StatsHeader({ sc, scChange }) {
     </div>
   );
 }
-function App() {
-  const [money, setMoney] = useState(0);
-  const [ProductionAmt, setProductionAmt] = useState(0);
-  const [activeTab, setActiveTab] = useState(1);
-  const [purchaseAmt, setPurchaseAmt] = useState(1);
 
-  const [unlockCounts, setUnlockCounts] = useState({
+function handleBuyItem(
+  playerInventory,
+  item,
+  setInventory,
+  money,
+  changeMoney,
+  setMarketItems,
+  marketItems
+) {
+  if (money >= item.price) {
+    changeMoney(money - item.price);
+    setInventory([...playerInventory, item]);
+    setMarketItems(marketItems.filter((i) => i.key !== item.key));
+  }
+}
+
+function App() {
+  const [money, setMoney] = useState(10000);
+  const [productionAmount, setProductionAmount] = useState(0);
+  const [activeTab, setActiveTab] = useState(1);
+  const [purchaseAmount, setPurchaseAmount] = useState(1);
+
+  const [unlockAmount, setUnlockAmount] = useState({
     chef: 0,
     bakery: 0,
     market: 0,
@@ -449,27 +541,31 @@ function App() {
     factory: 5000,
     industry: 10000,
   });
+
   const [marketItems, setMarketItems] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
-  const [scSelected, setscSelected] = useState(0);
-  const [croissantCount, setCroissantCount] = useState(0);
-  const [ieSelected, setieSelected] = useState(1);
-  const productionAmtRef = useRef(ProductionAmt);
+  const [scSelected, setScSelected] = useState(0);
+  const [croissantAmount, setCroissantAmount] = useState(0);
+  const [ieSelected, setIeSelected] = useState(1);
+  const productionAmountRef = useRef(productionAmount);
   const [croissantStats, setCroissantStats] = useState({
     productionSpeed: 1,
     sellSpeed: 5,
-    price: 3,
+    price: 1,
     sellAmount: 50,
   });
-  const [sBarKey, setsBarKey] = useState(0);
+  const [sellBarKey, setSellBarKey] = useState(0);
   const [inventory, setInventory] = useState([]);
-  const [pBarKey, setpBarKey] = useState(0);
+  const [prodBarKey, setProdBarKey] = useState(0);
+
   useEffect(() => {
     const sellInterval = setInterval(() => {
-      console.log("sold");
-      setsBarKey((prev) => prev + 1);
-      setCroissantCount((prevCount) => {
-        const soldAmount = prevCount;
+      setSellBarKey((prev) => prev + 1);
+      setCroissantAmount((prevCount) => {
+        let soldAmount =
+          croissantStats.sellAmount >= prevCount
+            ? prevCount
+            : croissantStats.sellAmount;
         setMoney((prevMoney) => prevMoney + soldAmount * croissantStats.price);
         return croissantStats.sellAmount >= prevCount
           ? 0
@@ -478,15 +574,16 @@ function App() {
     }, croissantStats.sellSpeed * 1000);
     return () => clearInterval(sellInterval);
   }, [croissantStats]);
+
   useEffect(() => {
     const resetMarket = () => {
-      const entries = Object.entries(croissantIngredients);
-      const newItems = shuffleStore(entries, rarityWeight)
+      const entries = Object.entries(ingredients);
+      const newItems = shuffleMarket(entries, rarityWeight)
         .slice(0, 4)
         .map(([key, value]) => ({
           key,
           ...value,
-          price: priceCalculation(value.rarity),
+          price: calculatePbyR(value.rarity),
         }));
       setMarketItems(newItems);
       setTimeRemaining(120);
@@ -506,71 +603,74 @@ function App() {
 
     return () => clearInterval(interval);
   }, []);
+
   useEffect(() => {
-    productionAmtRef.current = ProductionAmt;
-  }, [ProductionAmt]);
+    productionAmountRef.current = productionAmount;
+  }, [productionAmount]);
+
   useEffect(() => {
     const produceInterval = setInterval(() => {
-      console.log("produce");
-      setCroissantCount((prev) => prev + productionAmtRef.current);
-      setpBarKey((prev) => prev + 1);
+      setCroissantAmount((prev) => prev + productionAmountRef.current);
+      setProdBarKey((prev) => prev + 1);
     }, croissantStats.productionSpeed * 1000);
     return () => clearInterval(produceInterval);
-  }, [croissantStats]);
+  }, [croissantStats, productionAmount]);
 
-  const handlePurchase = (key, price, setProductionAmt, currentProduction) => {
-    if (money < price * (purchaseAmt === "Max" ? 1 : purchaseAmt)) return;
+  const handlePurchase = (key, price, addProduction, currentProduction) => {
+    if (money < price * (purchaseAmount === "Max" ? 1 : purchaseAmount)) return;
 
-    if (purchaseAmt === "Max") {
+    if (purchaseAmount === "Max") {
       const maxBuy = Math.floor(money / price);
       setMoney((m) => m - maxBuy * price);
-      setUnlockCounts((prev) => ({
+      setUnlockAmount((prev) => ({
         ...prev,
         [key]: prev[key] + maxBuy,
       }));
-      let ProductionIncrease = maxBuy * croissantUnlockStats[key].cps;
-      setProductionAmt(currentProduction + ProductionIncrease);
+      let productionIncrease = maxBuy * croissantStatsTable[key].cps;
+      addProduction(currentProduction + productionIncrease);
     } else {
-      setMoney((m) => m - price * purchaseAmt);
-      setUnlockCounts((prev) => ({
+      setMoney((m) => m - price * purchaseAmount);
+      setUnlockAmount((prev) => ({
         ...prev,
-        [key]: prev[key] + purchaseAmt,
+        [key]: prev[key] + purchaseAmount,
       }));
-      let ProductionIncrease = purchaseAmt * croissantUnlockStats[key].cps;
-      setProductionAmt(currentProduction + ProductionIncrease);
+      let productionIncrease = purchaseAmount * croissantStatsTable[key].cps;
+      addProduction(currentProduction + productionIncrease);
     }
   };
+
   const addProduction = (amount) => {
-    setProductionAmt(amount);
+    setProductionAmount(amount);
   };
+
   return (
     <>
       <div className="container">
         <Header activeTab={activeTab} setActiveTab={setActiveTab} />
         <div className="topbar-unlock">
-          <Topbar
+          <TopBar
             activeTab={activeTab}
-            purchaseAmt={purchaseAmt}
-            setPurchaseAmt={setPurchaseAmt}
+            purchaseAmount={purchaseAmount}
+            setPurchaseAmount={setPurchaseAmount}
             timeRemaining={timeRemaining}
             ieSelected={ieSelected}
-            setieSelected={setieSelected}
+            setIeSelected={setIeSelected}
           />
         </div>
         <div className="main-unlock">
-          {activeTab === 1&&  (
-            <CroissantUnlockShop
-              unlockCounts={unlockCounts}
+          {activeTab === 1 && (
+            <UnlockShop
+              unlockAmount={unlockAmount}
               unlockPrices={unlockPrices}
-              purchaseAmt={purchaseAmt}
+              purchaseAmount={purchaseAmount}
               onPurchase={handlePurchase}
               addProduction={addProduction}
-              currentProduction={ProductionAmt}
+              currentProduction={productionAmount}
               money={money}
             />
           )}
-          {activeTab === 2&& (
-            <RenderStore
+          {activeTab === 2 && (
+            <MarketStore
               items={marketItems}
               playerInventory={inventory}
               setInventory={setInventory}
@@ -580,21 +680,26 @@ function App() {
               marketItems={marketItems}
             />
           )}
-          {activeTab === 3 &&(
+          {activeTab === 3 && (
             <>
-            {ieSelected===1&&<RenderIngredients playerInventory={inventory}/>}
-            {ieSelected===2&&<div>goon</div>}
-         </> )}
+              {ieSelected === 1 && (
+                <IngredientsList playerInventory={inventory} />
+              )}
+              {ieSelected === 2 && (
+                <EnhancementsList playerInventory={inventory} />
+              )}
+            </>
+          )}
         </div>
       </div>
       <div className="container">
-        <StatsHeader sc={scSelected} scChange={setscSelected} />
+        <StatsHeader sc={scSelected} scChange={setScSelected} />
         <div className="main-stats">
           <div className="main-clicker">
             <div
               className="clicker"
               onClick={() => {
-                setCroissantCount(croissantCount + 1);
+                setCroissantAmount(croissantAmount + 1);
               }}
             >
               <div className="clicker-blue"></div>
@@ -605,7 +710,7 @@ function App() {
           <div className="stat-info">
             <div className="sinfo-container">
               <div>
-                Croissants <span>{croissantCount}</span>
+                Croissants <span>{croissantAmount}</span>
               </div>
               <div>
                 Money <span>${money}</span>
@@ -613,7 +718,7 @@ function App() {
               <div>
                 Production{" "}
                 <span>
-                  {ProductionAmt}/
+                  {productionAmount}/
                   {croissantStats.productionSpeed === 1
                     ? ""
                     : croissantStats.productionSpeed}
@@ -632,7 +737,7 @@ function App() {
                 <FontAwesomeIcon icon={faTruck} />
                 <div className="progress">
                   <div
-                    key={sBarKey}
+                    key={sellBarKey}
                     className={"delivery-progress running"}
                     style={{
                       animationDuration: `${croissantStats.sellSpeed}s`,
@@ -643,7 +748,7 @@ function App() {
             </div>
             <div
               className={
-                ProductionAmt >= 1
+                productionAmount >= 1
                   ? "progress-container production"
                   : "disabled"
               }
@@ -652,9 +757,9 @@ function App() {
                 <FontAwesomeIcon icon={faHammer} />
                 <div className="progress">
                   <div
-                    key={pBarKey}
+                    key={prodBarKey}
                     className={
-                      ProductionAmt > 0
+                      productionAmount > 0
                         ? "production-progress running"
                         : "progress-bar"
                     }
@@ -673,4 +778,5 @@ function App() {
     </>
   );
 }
+
 export default App;
