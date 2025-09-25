@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, act } from "react";
 import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,9 +14,8 @@ import {
   faTruck,
   faCaretUp,
   faHammer,
-  faClock
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
-
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -93,51 +92,38 @@ function getIngredientAmount(inventory, ingredient) {
   return found ? found.amount : 0;
 }
 
-
 const enhancementPrices = {
   sell: {
     l1: [
-      { key: "butter", name: "Butter", amount: 1 },
-      { key: "sugar", name: "Caster Sugar", amount: 1 },
+      { key: "butter", amount: 1 },
+      { key: "flour", amount: 1 },
+      { key: "milk", amount: 1 },
+      { key: "sugar", amount: 1 },
     ],
-      l2: [
-      { key: "butter", name: "Butter", amount: 2 },
-      { key: "sugar", name: "Caster Sugar", amount: 3 },
+    l2: [
+      { key: "butter", amount: 2 },
+      { key: "flour", amount: 3 },
+      { key: "sugar", amount: 4 },
+      { key: "milk", amount: 2 },
     ],
-      l3: [
-      { key: "blacktruffle", name: "Black Truffle", amount: 1 },
-      { key: "sugar", name: "Caster Sugar", amount: 3 },
-      { key: "whitetruffle", name: "White Truffle", amount: 3 },
+    l3: [
+      { key: "butter", amount: 5 },
+      { key: "panela", amount: 1 },
+      { key: "flour", amount: 3 },
+      { key: "milk", amount: 5 },
     ],
   },
   produce: {
     l1: [
-      { key: "butter", name: "Butter", amount: 1 },
-      { key: "sugar", name: "Caster Sugar", amount: 1 },
-    ],
-      l2: [
-      { key: "butter", name: "Butter", amount: 2 },
-      { key: "sugar", name: "Caster Sugar", amount: 3 },
-    ],
-      l3: [
-      { key: "blacktruffle", name: "Black Truffle", amount: 1 },
-      { key: "sugar", name: "Caster Sugar", amount: 3 },
-      { key: "whitetruffle", name: "White Truffle", amount: 3 },
+      { key: "butter", amount: 1 },
+      { key: "sugar", amount: 1 },
     ],
   },
-    expensive: {
-    l1: [
-      { key: "butter", name: "Butter", amount: 1 },
-      { key: "sugar", name: "Caster Sugar", amount: 1 },
-    ],
-      l2: [
-      { key: "butter", name: "Butter", amount: 2 },
-      { key: "sugar", name: "Caster Sugar", amount: 3 },
-    ],
-      l5: [
-      { key: "blacktruffle", name: "Black Truffle", amount: 4 },
-      { key: "sugar", name: "Caster Sugar", amount: 10 },
-      { key: "whitetruffle", name: "White Truffle", amount: 2 },
+  expensive: {
+    l1: [{ key: "salt", amount: 1 }],
+    l2: [
+      { key: "butter", amount: 1 },
+      { key: "sugar", amount: 1 },
     ],
   },
 };
@@ -145,22 +131,30 @@ const enhancementPrices = {
 const enhancementEffects = {
   sell: {
     l1: { display: "1.5x Sell Rate", effect: 1.5, duration: 60 },
-    l2: { display: "2x Sell Rate", effect: 2,duration: 60 },
-    l3: { display: "2.5x Sell Rate", effect: 2.5,duration: 120 },
-    l4: { display: "3x Sell Rate", effect: 3,duration: 150},
-    l5: { display: "5x Sell Rate", effect: 5,duration: 210},
+    l2: { display: "2x Sell Rate", effect: 2, duration: 60 },
+    l3: { display: "3x Sell Rate", effect: 2.5, duration: 120 },
+    l4: {
+      display: ["3x Sell Rate", "-25% Sell Time"],
+      effect: 3,
+      duration: 150,
+    },
+    l5: {
+      display: ["5x Sell Rate", "-50% Sell Time"],
+      effect: 5,
+      duration: 210,
+    },
   },
-    produce: {
+  produce: {
     l1: { display: "1.2x Production", effect: 1.2, duration: 60 },
-    l2: { display: "1.5x Production", effect: 1.5,duration: 60 },
-    l3: { display: "2x Production", effect: 2,duration: 120 }
+    l2: { display: "1.5x Production", effect: 1.5, duration: 60 },
+    l3: { display: "2x Production", effect: 2, duration: 120 },
   },
-    expensive: {
+  expensive: {
     l1: { display: "+$1 Sell Price", effect: 1, duration: 60 },
-    l2: { display: "+$2 Sell Price", effect: 2,duration: 60 },
-    l3: { display: "+$3 Sell Price", effect: 3,duration: 120 },
-    l4: { display: "+$5 Sell Price", effect: 5,duration: 120 },
-    l5: { display: "+$6 Sell Price", effect: 6,duration: 300 }
+    l2: { display: "+$2 Sell Price", effect: 2, duration: 60 },
+    l3: { display: "+$3 Sell Price", effect: 3, duration: 120 },
+    l4: { display: "+$5 Sell Price", effect: 5, duration: 120 },
+    l5: { display: "+$10 Sell Price", effect: 6, duration: 300 },
   },
 };
 
@@ -173,14 +167,14 @@ const enhancements = [
   },
   {
     key: "produce",
-    price: enhancementPrices.produce.l2,
-    effect: enhancementEffects.produce.l2,
+    price: enhancementPrices.produce.l1,
+    effect: enhancementEffects.produce.l1,
     name: "Higher Production",
   },
   {
     key: "expensive",
-    price: enhancementPrices.expensive.l5,
-    effect: enhancementEffects.expensive.l5,
+    price: enhancementPrices.expensive.l1,
+    effect: enhancementEffects.expensive.l1,
     name: "Expensive Croissants",
   },
 ];
@@ -196,7 +190,7 @@ const croissantPlurals = {
 const ingredients = {
   flour: { name: "Wheat Flour", rarity: "basic", img: "flour" },
   sugar: { name: "Caster Sugar", rarity: "basic", img: "sugar" },
-  salt: { name: "French Salt", rarity: "basic", img: "salt" },
+  salt: { name: "Kosher Salt", rarity: "basic", img: "salt" },
   butter: { name: "Butter", rarity: "basic", img: "butter" },
   blacktruffle: {
     name: "Black Truffle",
@@ -209,6 +203,10 @@ const ingredients = {
     rarity: "deluxe",
     img: "whitetruffle",
   },
+  milk: { name: "Milk", rarity: "basic", img: "milk" },
+  saffron: { name: "Saffron", rarity: "deluxe", img: "saffron" },
+  panela: { name: "Panela Sugar", rarity: "premium", img: "panela" },
+  bamboosalt: { name: "Bamboo Salt", rarity: "premium", img: "bluesalt" },
 };
 
 const croissantUnlockData = {
@@ -219,14 +217,6 @@ const croissantUnlockData = {
   industry: { price: 10000, required: 50 },
 };
 
-const croissantStatsTable = {
-  chef: { cps: 1 },
-  bakery: { cps: 6 },
-  market: { cps: 15 },
-  factory: { cps: 125 },
-  industry: { cps: 450 },
-};
-
 const rarityWeight = {
   basic: 5,
   premium: 5,
@@ -234,7 +224,6 @@ const rarityWeight = {
 };
 
 function getRarityIcon(rarity) {
-  console.log(rarity)
   if (rarity === "basic") return faCircle;
   if (rarity === "premium") return faDiamond;
   if (rarity === "deluxe") return faStar;
@@ -260,6 +249,7 @@ function UnlockShop({
   addProduction,
   currentProduction,
   money,
+  croissantStatsTable,
 }) {
   const entries = Object.entries(croissantUnlockData);
   let firstLockedIndex = entries.findIndex(([key, value], index) => {
@@ -295,7 +285,8 @@ function UnlockShop({
                   key,
                   unlockPrices[key],
                   addProduction,
-                  currentProduction
+                  currentProduction,
+                  croissantStatsTable
                 )
               }
             >
@@ -405,7 +396,10 @@ function IngredientsList({ playerInventory }) {
   return (
     <>
       {groupedInventory.map((ingredient) => (
-        <div className={`inv-${ingredient.rarity} inv-item`} key={ingredient.key}>
+        <div
+          className={`inv-${ingredient.rarity} inv-item`}
+          key={ingredient.key}
+        >
           <div className={`item-desc`}>
             <div className="item-info">
               <span className={`item-name ${ingredient.rarity}-name`}>
@@ -432,36 +426,115 @@ function IngredientsList({ playerInventory }) {
 
 function EnhancementRecipe({ enhancement, inventory }) {
   return enhancement.map((ingredient) => (
-    <div className={`enhancement-ingredient ${ingredients[ingredient.key].rarity}-ingredient`} key={ingredient.key}>
-      <div className="ingredient">{ingredient.name}</div>
+    <div
+      className={`enhancement-ingredient ${
+        ingredients[ingredient.key].rarity
+      }-ingredient`}
+      key={ingredient.key}
+    >
+      <div className="ingredient">{ingredients[ingredient.key].name}</div>
       <div className={`${ingredients[ingredient.key].rarity}-idivider`}></div>
-      <span className={`${getIngredientAmount(inventory, ingredient)>=ingredient.amount?'':`ecost-${ingredients[ingredient.key].rarity}`}`}>
+      <span
+        className={`${
+          getIngredientAmount(inventory, ingredient) >= ingredient.amount
+            ? ""
+            : `ecost-${ingredients[ingredient.key].rarity}`
+        }`}
+      >
         {getIngredientAmount(inventory, ingredient)}/{ingredient.amount}
       </span>
     </div>
   ));
 }
+function displayEffects(effects) {
+  if (Array.isArray(effects)) {
+    return effects.map((effect, index) => <span key={index}>{effect}</span>);
+  } else {
+    return <span>{effects}</span>;
+  }
+}
+function activateEnhancement(enhancement, setCroissantStats, setProductionAmount){
+  if(enhancement.key=='expensive'){
+    setCroissantStats(prev => ({
+      ...prev, price: prev.price+enhancement.effect.effect
+    }))
+  }
+}
+function craftEnhancement(
+  inventory,
+  enhancement,
+  setInventory,
+  setCroissantStats,
+  setProductionAmount,
+  
+) {
+  const groupedInventory = groupInventoryItems(inventory);
+  let canCraft = true;
 
-function EnhancementsList({ playerInventory }) {
+  for (const req of enhancement.price) {
+    const invItem = groupedInventory.find((i) => i.key === req.key);
+    if (!invItem || invItem.amount < req.amount) {
+      canCraft = false;
+      break;
+    }
+  }
+
+  if (!canCraft) {
+    return;
+  }
+
+  let updatedInventory = [...inventory];
+  for (const req of enhancement.price) {
+    let toRemove = req.amount;
+    updatedInventory = updatedInventory.filter((item) => {
+      if (item.key === req.key && toRemove > 0) {
+        toRemove - 1;
+      }
+    });
+  }
+  setInventory(updatedInventory);
+  activateEnhancement(enhancement, setCroissantStats, setProductionAmount)
+}
+function EnhancementsList({
+  playerInventory,
+  setInventory,
+  setCroissantStats,
+  setProductionAmount,
+}) {
   return enhancements.map((enhancement) => (
     <div className="enhancement" key={enhancement.name}>
       <div className="enhancement-tinfo">
-      <div className="enhancement-desc">
-        <span className="enhancement-name">{enhancement.name}</span>
-        <span className={`${enhancement.key}-einfo`}>
-          <FontAwesomeIcon icon={faCaretUp} /> {enhancement.effect.display}
-        </span>
+        <div className="enhancement-desc">
+          <span className="enhancement-name">{enhancement.name}</span>
+          <span className={`${enhancement.key} einfo`}>
+            <FontAwesomeIcon icon={faCaretUp} className="up" />{" "}
+            <div className="enhancement-effects">
+              {displayEffects(enhancement.effect.display)}
+            </div>
+          </span>
+        </div>
+        <div className="enhancement-cost">
+          <span className="ingredients-header">Recipe</span>
+          <EnhancementRecipe
+            enhancement={enhancement.price}
+            inventory={playerInventory}
+          />
+        </div>
       </div>
-      <div className="enhancement-cost">
-        <span className="ingredients-header">Recipe</span>
-        <EnhancementRecipe
-          enhancement={enhancement.price}
-          inventory={playerInventory}
-        />
+      <div
+        className="activate-btn"
+        onClick={() =>
+          craftEnhancement(
+            playerInventory,
+            enhancement,
+            setInventory,
+            setCroissantStats,
+            setProductionAmount
+          )
+        }
+      >
+        Craft {`(Lasts ${enhancement.effect.duration}s)`}
       </div>
-      
-      </div>
-            <div className="activate-btn">Craft {`(Lasts ${enhancement.effect.duration}s)`}</div>
     </div>
   ));
 }
@@ -481,7 +554,9 @@ function TopBar({
         {[1, 10, 100, "Max"].map((amt) => (
           <div
             key={amt}
-            className={purchaseAmount === amt ? "selected pa-change" : "pa-change"}
+            className={
+              purchaseAmount === amt ? "selected pa-change" : "pa-change"
+            }
             onClick={() => setPurchaseAmount(amt)}
           >
             {amt}
@@ -578,7 +653,7 @@ function handleBuyItem(
 }
 
 function App() {
-  const [money, setMoney] = useState(0);
+  const [money, setMoney] = useState(1000000);
   const [productionAmount, setProductionAmount] = useState(0);
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmount, setPurchaseAmount] = useState(1);
@@ -591,12 +666,19 @@ function App() {
     industry: 0,
   });
 
-  const [unlockPrices] = useState({
+  const [unlockPrices, setUnlockprices] = useState({
     chef: 100,
     bakery: 500,
     market: 1000,
     factory: 5000,
     industry: 10000,
+  });
+  const [croissantStatsTable, setCroissantStatsTable] = useState({
+    chef: { cps: 1 },
+    bakery: { cps: 6 },
+    market: { cps: 15 },
+    factory: { cps: 125 },
+    industry: { cps: 450 },
   });
 
   const [marketItems, setMarketItems] = useState([]);
@@ -615,22 +697,21 @@ function App() {
   const [inventory, setInventory] = useState([]);
   const [prodBarKey, setProdBarKey] = useState(0);
 
-  useEffect(() => {
-    const sellInterval = setInterval(() => {
-      setSellBarKey((prev) => prev + 1);
-      setCroissantAmount((prevCount) => {
-        let soldAmount =
-          croissantStats.sellAmount >= prevCount
-            ? prevCount
-            : croissantStats.sellAmount;
-        setMoney((prevMoney) => prevMoney + soldAmount * croissantStats.price);
-        return croissantStats.sellAmount >= prevCount
-          ? 0
-          : prevCount - croissantStats.sellAmount;
-      });
-    }, croissantStats.sellSpeed * 1000);
-    return () => clearInterval(sellInterval);
-  }, [croissantStats]);
+useEffect(() => {
+  const sellInterval = setInterval(() => {
+    setSellBarKey((prev) => prev + 1);
+    setCroissantAmount((prevCount) => {
+      let soldAmount =
+        croissantStats.sellAmount >= prevCount
+          ? prevCount
+          : croissantStats.sellAmount;
+      let profit = soldAmount * croissantStats.price;
+      setMoney((prevMoney) => prevMoney + profit);
+      return prevCount - soldAmount; 
+    });
+  }, croissantStats.sellSpeed * 1000);
+  return () => clearInterval(sellInterval);
+}, [croissantStats]);
 
   useEffect(() => {
     const resetMarket = () => {
@@ -665,6 +746,7 @@ function App() {
     productionAmountRef.current = productionAmount;
   }, [productionAmount]);
 
+
   useEffect(() => {
     const produceInterval = setInterval(() => {
       setCroissantAmount((prev) => prev + productionAmountRef.current);
@@ -673,7 +755,13 @@ function App() {
     return () => clearInterval(produceInterval);
   }, [croissantStats, productionAmount]);
 
-  const handlePurchase = (key, price, addProduction, currentProduction) => {
+  const handlePurchase = (
+    key,
+    price,
+    addProduction,
+    currentProduction,
+    croissantStatsTable
+  ) => {
     if (money < price * (purchaseAmount === "Max" ? 1 : purchaseAmount)) return;
 
     if (purchaseAmount === "Max") {
@@ -724,6 +812,7 @@ function App() {
               addProduction={addProduction}
               currentProduction={productionAmount}
               money={money}
+              croissantStatsTable={croissantStatsTable}
             />
           )}
           {activeTab === 2 && (
@@ -743,7 +832,12 @@ function App() {
                 <IngredientsList playerInventory={inventory} />
               )}
               {ieSelected === 2 && (
-                <EnhancementsList playerInventory={inventory} />
+                <EnhancementsList
+                  playerInventory={inventory}
+                  setInventory={setInventory}
+                  setProductionAmount={setProductionAmount}
+                  setCroissantStats={setCroissantStats}
+                />
               )}
             </>
           )}

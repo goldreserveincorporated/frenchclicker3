@@ -618,6 +618,7 @@
   border-radius: 10px;
   border: 1px solid var(--tertiary);
   padding: 2.5%;
+  background-color: var(--secondary);
   display: flex;
   box-sizing: border-box;
   align-items: center;
@@ -629,6 +630,12 @@
   align-items: center;
   width: 45%;
   flex-direction: column;
+}
+.enhancement-effects {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .enhancement-name {
   text-align: center;
@@ -692,9 +699,6 @@
   justify-content: space-between;
   flex-direction: row;
 }
-.produce-einfo {
-  color: var(--purple);
-}
 .ecost-basic {
   filter: brightness(0.8);
 }
@@ -704,11 +708,27 @@
 .ecost-deluxe {
   filter: brightness(0.8);
 }
-.sell-einfo {
+.einfo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  justify-content: center;
+  width: 90%;
+}
+.einfo.sell {
   color: var(--gold);
 }
-.expensive-einfo {
+.einfo.produce {
+  color: var(--purple);
+}
+.einfo.expensive {
   color: var(--light-green);
+}
+.up {
+  position: absolute;
+  left: 0;
 }
 .activate-btn {
   display: flex;
