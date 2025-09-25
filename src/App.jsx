@@ -94,12 +94,7 @@ function getIngredientAmount(inventory, ingredient) {
 
 const enhancementPrices = {
   sell: {
-    l1: [
-      { key: "butter", amount: 1 },
-      { key: "flour", amount: 1 },
-      { key: "milk", amount: 1 },
-      { key: "sugar", amount: 1 },
-    ],
+    l1: [{ key: "salt", amount: 1 }],
     l2: [
       { key: "butter", amount: 2 },
       { key: "flour", amount: 3 },
@@ -114,10 +109,7 @@ const enhancementPrices = {
     ],
   },
   produce: {
-    l1: [
-      { key: "butter", amount: 1 },
-      { key: "sugar", amount: 1 },
-    ],
+    l1: [{ key: "salt", amount: 1 }],
   },
   expensive: {
     l1: [{ key: "salt", amount: 1 }],
@@ -453,11 +445,28 @@ function displayEffects(effects) {
     return <span>{effects}</span>;
   }
 }
-function activateEnhancement(enhancement, setCroissantStats, setProductionAmount){
-  if(enhancement.key=='expensive'){
-    setCroissantStats(prev => ({
-      ...prev, price: prev.price+enhancement.effect.effect
-    }))
+function activateEnhancement(
+  enhancement,
+  setCroissantStats,
+  setProductionAmount
+) {
+  if (enhancement.key == "expensive") {
+    setCroissantStats((prev) => ({
+      ...prev,
+      price: prev.price + enhancement.effect.effect,
+    }));
+  }
+  if (enhancement.key == "sell") {
+    setCroissantStats((prev) => ({
+      ...prev,
+      sellAmount: Math.round(prev.sellAmount * enhancement.effect.effect),
+    }));
+  }
+  if (enhancement.key == "produce") {
+    setProductionAmount((prev) => ({
+      ...prev,
+      multiplier: prev.multiplier * enhancement.effect.effect,
+    }));
   }
 }
 function craftEnhancement(
@@ -465,8 +474,7 @@ function craftEnhancement(
   enhancement,
   setInventory,
   setCroissantStats,
-  setProductionAmount,
-  
+  setProductionAmount
 ) {
   const groupedInventory = groupInventoryItems(inventory);
   let canCraft = true;
@@ -488,12 +496,14 @@ function craftEnhancement(
     let toRemove = req.amount;
     updatedInventory = updatedInventory.filter((item) => {
       if (item.key === req.key && toRemove > 0) {
-        toRemove - 1;
+        toRemove -= 1;
+        return false;
       }
+      return true;
     });
   }
   setInventory(updatedInventory);
-  activateEnhancement(enhancement, setCroissantStats, setProductionAmount)
+  activateEnhancement(enhancement, setCroissantStats, setProductionAmount);
 }
 function EnhancementsList({
   playerInventory,
@@ -653,8 +663,11 @@ function handleBuyItem(
 }
 
 function App() {
-  const [money, setMoney] = useState(1000000);
-  const [productionAmount, setProductionAmount] = useState(0);
+  const [money, setMoney] = useState(0);
+  const [productionAmount, setProductionAmount] = useState({
+    amount: 0,
+    multiplier: 1,
+  });
   const [activeTab, setActiveTab] = useState(1);
   const [purchaseAmount, setPurchaseAmount] = useState(1);
 
@@ -693,25 +706,38 @@ function App() {
     price: 1,
     sellAmount: 50,
   });
+  const croissantStatsRef = useRef(croissantStats);
   const [sellBarKey, setSellBarKey] = useState(0);
-  const [inventory, setInventory] = useState([]);
+  const [inventory, setInventory] = useState([
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+  ]);
   const [prodBarKey, setProdBarKey] = useState(0);
-
-useEffect(() => {
-  const sellInterval = setInterval(() => {
-    setSellBarKey((prev) => prev + 1);
-    setCroissantAmount((prevCount) => {
-      let soldAmount =
-        croissantStats.sellAmount >= prevCount
-          ? prevCount
-          : croissantStats.sellAmount;
-      let profit = soldAmount * croissantStats.price;
-      setMoney((prevMoney) => prevMoney + profit);
-      return prevCount - soldAmount; 
-    });
-  }, croissantStats.sellSpeed * 1000);
-  return () => clearInterval(sellInterval);
-}, [croissantStats]);
+  useEffect(() => {
+    croissantStatsRef.current = croissantStats;
+  }, [croissantStats]);
+  useEffect(() => {
+    const sellInterval = setInterval(() => {
+      setSellBarKey((prev) => prev + 1);
+      setCroissantAmount((prevCount) => {
+        let soldAmount =
+          croissantStatsRef.current.sellAmount >= prevCount
+            ? prevCount
+            : croissantStatsRef.current.sellAmount;
+        let profit = soldAmount * croissantStatsRef.current.price;
+        setMoney((prevMoney) => prevMoney + profit);
+        return prevCount - soldAmount;
+      });
+    }, croissantStats.sellSpeed * 1000);
+    return () => clearInterval(sellInterval);
+  }, [croissantStats.sellSpeed]);
 
   useEffect(() => {
     const resetMarket = () => {
@@ -746,10 +772,17 @@ useEffect(() => {
     productionAmountRef.current = productionAmount;
   }, [productionAmount]);
 
-
   useEffect(() => {
     const produceInterval = setInterval(() => {
-      setCroissantAmount((prev) => prev + productionAmountRef.current);
+      console.log(productionAmountRef.current.multiplier);
+      setCroissantAmount(
+        (prev) =>
+          prev +
+          Math.round(
+            productionAmountRef.current.amount *
+              productionAmountRef.current.multiplier
+          )
+      );
       setProdBarKey((prev) => prev + 1);
     }, croissantStats.productionSpeed * 1000);
     return () => clearInterval(produceInterval);
@@ -772,7 +805,10 @@ useEffect(() => {
         [key]: prev[key] + maxBuy,
       }));
       let productionIncrease = maxBuy * croissantStatsTable[key].cps;
-      addProduction(currentProduction + productionIncrease);
+      addProduction((prev) => ({
+        ...prev,
+        amount: prev.amount + productionIncrease,
+      }));
     } else {
       setMoney((m) => m - price * purchaseAmount);
       setUnlockAmount((prev) => ({
@@ -780,7 +816,10 @@ useEffect(() => {
         [key]: prev[key] + purchaseAmount,
       }));
       let productionIncrease = purchaseAmount * croissantStatsTable[key].cps;
-      addProduction(currentProduction + productionIncrease);
+      addProduction((prev) => ({
+        ...prev,
+        amount: prev.amount + productionIncrease,
+      }));
     }
   };
 
@@ -869,7 +908,10 @@ useEffect(() => {
               <div>
                 Production{" "}
                 <span>
-                  {productionAmount}/
+                  {Math.round(
+                    productionAmount.amount * productionAmount.multiplier
+                  )}
+                  /
                   {croissantStats.productionSpeed === 1
                     ? ""
                     : croissantStats.productionSpeed}
@@ -899,7 +941,7 @@ useEffect(() => {
             </div>
             <div
               className={
-                productionAmount >= 1
+                productionAmount.amount > 0
                   ? "progress-container production"
                   : "disabled"
               }
@@ -910,7 +952,7 @@ useEffect(() => {
                   <div
                     key={prodBarKey}
                     className={
-                      productionAmount > 0
+                      productionAmount.amount > 0
                         ? "production-progress running"
                         : "progress-bar"
                     }
