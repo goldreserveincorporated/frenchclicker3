@@ -15,6 +15,10 @@ import {
   faCaretUp,
   faHammer,
   faClock,
+  faRocket,
+  faLightbulb,
+  faMagnifyingGlass,
+  faBox,
 } from "@fortawesome/free-solid-svg-icons";
 
 function formatTime(seconds) {
@@ -624,7 +628,7 @@ function Header({ activeTab, setActiveTab }) {
         className={activeTab === 3 ? "unlock-type uiselected" : "unlock-type"}
         onClick={() => setActiveTab(3)}
       >
-        <FontAwesomeIcon icon={faCircleUp} /> Enhance
+        <FontAwesomeIcon icon={faRocket} /> Enhance
       </div>
     </div>
   );
@@ -669,6 +673,7 @@ function App() {
     multiplier: 1,
   });
   const [activeTab, setActiveTab] = useState(1);
+  const [activeUTab, setActiveUTab] = useState(1);
   const [purchaseAmount, setPurchaseAmount] = useState(1);
 
   const [unlockAmount, setUnlockAmount] = useState({
@@ -829,7 +834,7 @@ function App() {
 
   return (
     <>
-      <div className="container">
+      <div className="container uncontainer">
         <Header activeTab={activeTab} setActiveTab={setActiveTab} />
         <div className="topbar-unlock">
           <TopBar
@@ -882,7 +887,7 @@ function App() {
           )}
         </div>
       </div>
-      <div className="container">
+      <div className="container scontainer">
         <StatsHeader sc={scSelected} scChange={setScSelected} />
         <div className="main-stats">
           <div className="main-clicker">
@@ -965,6 +970,29 @@ function App() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <div className="upcontainer container">
+        <div className="upgrades-header">
+          <div
+            className={
+              activeUTab === 1 ? "upgrade-type uiselected" : "upgrade-type"
+            }
+            onClick={() => setActiveUTab(1)}
+          >
+            <FontAwesomeIcon icon={faCircleUp} /> Upgrades
+          </div>
+          <div
+            className={
+              activeUTab === 2 ? "upgrade-type uiselected" : "upgrade-type"
+            }
+            onClick={() => setActiveUTab(2)}
+          >
+            <FontAwesomeIcon icon={faMagnifyingGlass} /> Research
+          </div>
+          <div className="upgrade-type storage">
+            <FontAwesomeIcon icon={faBox} /> Storage
           </div>
         </div>
       </div>
