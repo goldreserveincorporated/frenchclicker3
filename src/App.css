@@ -28,7 +28,7 @@
   width: 32vw;
 }
 .scontainer {
-  width: 34vw;
+  width: 35vw;
 }
 .upcontainer {
   width: 32vw;
@@ -61,7 +61,7 @@
   width: 100%;
 }
 .clicker {
-  height: 40%;
+  height: 15vw;
   width: 100%;
   display: flex;
   transition: cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
@@ -74,6 +74,7 @@
   width: 80%;
   display: flex;
   flex: 1;
+  margin-top: 20%;
   align-items: flex-start;
 }
 .sinfo-container {
@@ -468,7 +469,20 @@
   background-color: var(--mainbg);
   border: 1px solid var(--tertiary);
 }
-
+.main-upgrades {
+  gap: 5%;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  box-sizing: border-box;
+  border-radius: 10px;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  padding: 5%;
+  background-color: var(--mainbg);
+  border: 1px solid var(--tertiary);
+}
 .unlock {
   width: 100%;
   background-color: var(--secondary);
@@ -554,6 +568,21 @@
   border-bottom: 1px solid var(--money-green);
   border-radius: 0 10px 10px 0;
   height: 100%;
+}
+.upgrade-pending {
+  color: var(--yellow-orange);
+  font-size: 80%;
+  margin-left: 5%;
+  animation: bounce 1s infinite;
+}
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20%);
+  }
 }
 .amount {
   font-size: 350%;
@@ -682,6 +711,7 @@
   width: 45%;
   flex-direction: column;
 }
+
 .enhancement-effects {
   display: flex;
   flex-direction: column;
@@ -690,6 +720,8 @@
 }
 .enhancement-name {
   text-align: center;
+  display: table-caption;
+  width: min-content;
   font-size: 150%;
 }
 .ingredients-header {

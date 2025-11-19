@@ -15,7 +15,7 @@ import {
   faCaretUp,
   faHammer,
   faClock,
-  faRocket,
+  faWandMagicSparkles,
   faLightbulb,
   faMagnifyingGlass,
   faBox,
@@ -186,7 +186,7 @@ const croissantPlurals = {
 const ingredients = {
   flour: { name: "Wheat Flour", rarity: "basic", img: "flour" },
   sugar: { name: "Caster Sugar", rarity: "basic", img: "sugar" },
-  salt: { name: "Kosher Salt", rarity: "basic", img: "salt" },
+  salt: { name: "Grey Salt", rarity: "basic", img: "salt" },
   butter: { name: "Butter", rarity: "basic", img: "butter" },
   blacktruffle: {
     name: "Black Truffle",
@@ -266,6 +266,10 @@ function UnlockShop({
             <div className="left-info">
               <span className="unlock-name">
                 Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+                <FontAwesomeIcon
+                  icon={faCircleUp}
+                  className="upgrade-pending"
+                />
               </span>
               <div className="description">
                 +{croissantStatsTable[key].cps} Croissants/s
@@ -298,6 +302,7 @@ function UnlockShop({
                 : formatMoney(unlockPrices[key] * purchaseAmount)}
             </div>
           </div>
+          <div className="train-area"></div>
         </div>
       );
     }
@@ -459,18 +464,36 @@ function activateEnhancement(
       ...prev,
       price: prev.price + enhancement.effect.effect,
     }));
+    setTimeout(() => {
+      setCroissantStats((prev) => ({
+        ...prev,
+        price: prev.price - enhancement.effect.effect,
+      }));
+    }, enhancement.effect.duration * 1000);
   }
   if (enhancement.key == "sell") {
     setCroissantStats((prev) => ({
       ...prev,
       sellAmount: Math.round(prev.sellAmount * enhancement.effect.effect),
     }));
+    setTimeout(() => {
+      setCroissantStats((prev) => ({
+        ...prev,
+        sellAmount: Math.round(prev.sellAmount / enhancement.effect.effect),
+      }));
+    }, enhancement.effect.duration * 1000);
   }
   if (enhancement.key == "produce") {
     setProductionAmount((prev) => ({
       ...prev,
       multiplier: prev.multiplier * enhancement.effect.effect,
     }));
+    setTimeout(() => {
+      setProductionAmount((prev) => ({
+        ...prev,
+        multiplier: prev.multiplier / enhancement.effect.effect,
+      }));
+    }, enhancement.effect.duration * 1000);
   }
 }
 function craftEnhancement(
@@ -628,7 +651,8 @@ function Header({ activeTab, setActiveTab }) {
         className={activeTab === 3 ? "unlock-type uiselected" : "unlock-type"}
         onClick={() => setActiveTab(3)}
       >
-        <FontAwesomeIcon icon={faRocket} /> Enhance
+        <FontAwesomeIcon icon={faWandMagicSparkles} />
+        Enhance
       </div>
     </div>
   );
@@ -667,7 +691,7 @@ function handleBuyItem(
 }
 
 function App() {
-  const [money, setMoney] = useState(0);
+  const [money, setMoney] = useState(10000);
   const [productionAmount, setProductionAmount] = useState({
     amount: 0,
     multiplier: 1,
@@ -714,15 +738,15 @@ function App() {
   const croissantStatsRef = useRef(croissantStats);
   const [sellBarKey, setSellBarKey] = useState(0);
   const [inventory, setInventory] = useState([
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
-    { key: "salt", name: "Kosher Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
+    { key: "salt", name: "Grey Salt", rarity: "basic", img: "salt" },
   ]);
   const [prodBarKey, setProdBarKey] = useState(0);
   useEffect(() => {
@@ -791,7 +815,7 @@ function App() {
       setProdBarKey((prev) => prev + 1);
     }, croissantStats.productionSpeed * 1000);
     return () => clearInterval(produceInterval);
-  }, [croissantStats, productionAmount]);
+  }, [croissantStats, productionAmount.productionSpeed]);
 
   const handlePurchase = (
     key,
@@ -929,6 +953,9 @@ function App() {
                   {croissantStats.sellAmount}/{croissantStats.sellSpeed}s
                 </span>
               </div>
+              <div>
+                Sell Price <span>${croissantStats.price}</span>
+              </div>
             </div>
             <div className="progress-container delivery">
               <div className="progress-mini">
@@ -995,6 +1022,7 @@ function App() {
             <FontAwesomeIcon icon={faBox} /> Storage
           </div>
         </div>
+        <div className="main-upgrades"></div>
       </div>
     </>
   );
