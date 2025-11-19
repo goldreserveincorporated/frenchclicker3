@@ -18,6 +18,7 @@ import {
   faWandMagicSparkles,
   faLightbulb,
   faMagnifyingGlass,
+  faArrowRight,
   faBox,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -206,13 +207,33 @@ const ingredients = {
 };
 
 const croissantUnlockData = {
-  chef: { price: 100, required: 0 },
-  bakery: { price: 500, required: 5 },
-  market: { price: 1000, required: 10 },
-  factory: { price: 5000, required: 25 },
-  industry: { price: 10000, required: 50 },
+  chef: { price: 100, required: 0, level: 1 },
+  bakery: { price: 500, required: 5, level: 1 },
+  market: { price: 1000, required: 10, level: 1 },
+  factory: { price: 5000, required: 25, level: 1 },
+  industry: { price: 10000, required: 50, level: 1 },
 };
+const croissantUpgrades = {
+  selling: {
+    name: "Faster Sell Rate",
+    desc: "Improves the sell rate of croissants",
 
+    effect: {
+      l1: { display: "100/5s", value: {} },
+      l2: { display: "250/5s", value: {} },
+      l3: { display: "500/3s", value: {} },
+      l4: { display: "1000/2s", value: {} },
+      l5: { display: "5000/1s", value: {} },
+    },
+    cost: {
+      l1: { croissants: 100, production: { chef: 10, bakery: 10 } },
+      l2: { croissants: 100, production: { chef: 10, bakery: 10 } },
+      l3: { croissants: 100, production: { chef: 10, bakery: 10 } },
+      l4: { croissants: 100, production: { chef: 10, bakery: 10 } },
+      l5: { croissants: 100, production: { chef: 10, bakery: 10 } },
+    },
+  },
+};
 const rarityWeight = {
   basic: 5,
   premium: 5,
@@ -266,6 +287,7 @@ function UnlockShop({
             <div className="left-info">
               <span className="unlock-name">
                 Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+                <div className="c-level"> L{value.level} </div>
                 <FontAwesomeIcon
                   icon={faCircleUp}
                   className="upgrade-pending"
@@ -313,9 +335,9 @@ function UnlockShop({
         <div className="unlock" key={key}>
           <div className="info">
             <div className="left-info">
-              <span className="unlock-name">
+              <div className="unlock-name">
                 Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
-              </span>
+              </div>
               <div className="description">
                 +{croissantStatsTable[key].cps} Croissants/s
               </div>
@@ -333,7 +355,39 @@ function UnlockShop({
     return null;
   });
 }
-
+function iterateUpgradeCost(upgrade) {
+  const costs = [];
+  console.log(upgrade);
+  for (const [type, cost] of Object.entries(upgrade)) {
+    costs.push({ type, cost });
+  }
+  console.log(costs);
+  return costs;
+}
+function UpgradeShop({ croissantUpgrades, croissantStats }) {
+  const entries = Object.entries(croissantUpgrades);
+  return entries.map(([key, value]) => (
+    <div className="upgrade" key={key}>
+      <div className="upgrade-name">{value.name}</div>
+      <div className="upgrade-desc">
+        {value.desc} {croissantStats.sellAmount}/{croissantStats.sellSpeed}s{" "}
+        <FontAwesomeIcon icon={faArrowRight} /> {value.effect.l1.display}
+      </div>
+      <div>
+        costs {value.cost.l1.croissants} croissants
+        {iterateUpgradeCost(value.cost.l1).map((cost) => (
+          <div key={cost.type}>
+            {Object.entries(cost.cost).map(([ckey, cvalue]) => (
+              <span key={ckey}>
+                {cvalue} {ckey}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  ));
+}
 function MarketStore({
   items,
   playerInventory,
@@ -1022,7 +1076,40 @@ function App() {
             <FontAwesomeIcon icon={faBox} /> Storage
           </div>
         </div>
-        <div className="main-upgrades"></div>
+        <div className="main-upgrades">
+          {activeUTab === 1 && (
+            <UpgradeShop
+              croissantUpgrades={croissantUpgrades}
+              croissantStats={croissantStats}
+            />
+          )}
+          {activeUTab === 2 && (
+            <MarketStore
+              items={marketItems}
+              playerInventory={inventory}
+              setInventory={setInventory}
+              changeMoney={setMoney}
+              money={money}
+              setMarketItems={setMarketItems}
+              marketItems={marketItems}
+            />
+          )}
+          {activeUTab === 3 && (
+            <>
+              {ieSelected === 1 && (
+                <IngredientsList playerInventory={inventory} />
+              )}
+              {ieSelected === 2 && (
+                <EnhancementsList
+                  playerInventory={inventory}
+                  setInventory={setInventory}
+                  setProductionAmount={setProductionAmount}
+                  setCroissantStats={setCroissantStats}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </>
   );

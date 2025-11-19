@@ -7,6 +7,7 @@
   --gold: #fdcb35;
   --light-yellow: #f8de7e;
   --yellow-orange: #ffc550;
+  --orange: #ffbf00;
   --french-blue: #28388d;
   --french-red: #e8303e;
   --light-blue: #b5c7eb;
@@ -494,8 +495,22 @@
   flex-direction: column;
   position: relative;
 }
+.upgrade {
+  width: 100%;
+  background-color: var(--secondary);
+  border: 1px solid var(--tertiary);
+  border-radius: 10px;
+  padding: 2.5%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
 .unlock-name {
   font-size: 200%;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: normal;
 }
 .info {
   width: 100%;
@@ -572,8 +587,8 @@
 .upgrade-pending {
   color: var(--yellow-orange);
   font-size: 80%;
-  margin-left: 5%;
-  animation: bounce 1s infinite;
+  margin-left: 3%;
+  animation: bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
 }
 @keyframes bounce {
   0%,
@@ -657,6 +672,15 @@
 }
 .production {
   color: var(--purple);
+}
+.c-level {
+  border: var(--orange) 1px solid;
+  color: var(--orange);
+  font-size: 70%;
+  display: inline-block;
+  padding: 1%;
+  border-radius: 5px;
+  margin-left: 3%;
 }
 .sell-time {
   border: 1px solid var(--money-green);
