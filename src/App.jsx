@@ -285,14 +285,16 @@ function UnlockShop({
         <div className="unlock" key={key}>
           <div className="info">
             <div className="left-info">
-              <span className="unlock-name">
-                Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
-                <div className="c-level"> L{value.level} </div>
-                <FontAwesomeIcon
-                  icon={faCircleUp}
-                  className="upgrade-pending"
-                />
-              </span>
+              <div className="un-container">
+                <div className="unlock-name">
+                  <div className="c-level"> L{value.level} </div>
+                  Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+                  <FontAwesomeIcon
+                    icon={faCircleUp}
+                    className="upgrade-pending"
+                  />
+                </div>
+              </div>
               <div className="description">
                 +{croissantStatsTable[key].cps} Croissants/s
               </div>
@@ -335,8 +337,10 @@ function UnlockShop({
         <div className="unlock" key={key}>
           <div className="info">
             <div className="left-info">
-              <div className="unlock-name">
-                Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+              <div className="un-container">
+                <div className="unlock-name">
+                  Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
+                </div>
               </div>
               <div className="description">
                 +{croissantStatsTable[key].cps} Croissants/s

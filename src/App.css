@@ -506,11 +506,10 @@
   flex-direction: column;
   position: relative;
 }
-.unlock-name {
+.un-container {
   font-size: 200%;
-  display: inline-block;
-  vertical-align: middle;
-  line-height: normal;
+  display: flex;
+  flex-direction: column;
 }
 .info {
   width: 100%;
@@ -587,23 +586,28 @@
 .upgrade-pending {
   color: var(--yellow-orange);
   font-size: 80%;
-  margin-left: 3%;
   animation: bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
 }
 @keyframes bounce {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(-10%);
   }
   50% {
-    transform: translateY(-20%);
+    transform: translateY(10%);
   }
 }
 .amount {
   font-size: 350%;
   align-items: center;
 }
-.unlock-name::after {
+.unlock-name {
+  display: flex;
+  align-items: center;
+  gap: 3%;
+  white-space: nowrap;
+}
+.un-container::after {
   content: "";
   display: block;
   margin-top: 2.5%;
@@ -674,13 +678,10 @@
   color: var(--purple);
 }
 .c-level {
-  border: var(--orange) 1px solid;
   color: var(--orange);
-  font-size: 70%;
+  font-weight: bold;
+  font-size: 60%;
   display: inline-block;
-  padding: 1%;
-  border-radius: 5px;
-  margin-left: 3%;
 }
 .sell-time {
   border: 1px solid var(--money-green);
