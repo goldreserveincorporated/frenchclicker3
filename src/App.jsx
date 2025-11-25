@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, act } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,9 +6,12 @@ import {
   faIndustry,
   faStore,
   faCircleUp,
+  faUpLong,
   faRotateRight,
+  faFlask,
   faCircle,
   faStar,
+  faCaretRight,
   faDiamond,
   faChevronDown,
   faTruck,
@@ -77,7 +80,20 @@ function calculateTotalPrice(unlockPrice, money) {
   const total = amount * unlockPrice;
   return total !== 0 ? total : unlockPrice;
 }
-
+function getCurrentStat(croissantStats, type) {
+  if (type == "selling") {
+    return `${croissantStats.sellAmount}/${croissantStats.sellSpeed}s `;
+  }
+  if (type == "price") {
+    return `$${croissantStats.price} `;
+  }
+  if (type == "discount") {
+    return `${croissantStats.discount}% discount`;
+  }
+  if (type == "luck") {
+    return `${croissantStats.luck}x luck`;
+  }
+}
 function groupInventoryItems(inventory) {
   const grouped = {};
   inventory.forEach((item) => {
@@ -90,7 +106,19 @@ function groupInventoryItems(inventory) {
   });
   return Object.values(grouped);
 }
-
+function levelClass(level) {
+  if (level >= 20) {
+    return "l50";
+  }
+  if (level >= 10) {
+    return "l25";
+  }
+  if (level >= 5) {
+    return "l10";
+  } else {
+    return "l1";
+  }
+}
 function getIngredientAmount(inventory, ingredient) {
   const groupedInventory = groupInventoryItems(inventory);
   const found = groupedInventory.find((i) => i.key === ingredient.key);
@@ -114,7 +142,12 @@ const enhancementPrices = {
     ],
   },
   produce: {
-    l1: [{ key: "salt", amount: 1 }],
+    l1: [
+      { key: "salt", amount: 1 },
+      { key: "butter", amount: 2 },
+      { key: "bamboosalt", amount: 1 },
+      { key: "puffpastry", amount: 1 },
+    ],
   },
   expensive: {
     l1: [{ key: "salt", amount: 1 }],
@@ -207,36 +240,89 @@ const ingredients = {
 };
 
 const croissantUnlockData = {
-  chef: { price: 100, required: 0, level: 1 },
-  bakery: { price: 500, required: 5, level: 1 },
-  market: { price: 1000, required: 10, level: 1 },
-  factory: { price: 5000, required: 25, level: 1 },
-  industry: { price: 10000, required: 50, level: 1 },
+  chef: { price: 100, required: 0 },
+  bakery: { price: 500, required: 5 },
+  market: { price: 1000, required: 10 },
+  factory: { price: 5000, required: 25 },
+  industry: { price: 10000, required: 50 },
 };
 const croissantUpgrades = {
   selling: {
-    name: "Faster Sell Rate",
-    desc: "Improves the sell rate of croissants",
-
+    name: "Better Delivery",
+    type: "selling",
     effect: {
-      l1: { display: "100/5s", value: {} },
+      l1: { display: "150/5s", value: {} },
       l2: { display: "250/5s", value: {} },
       l3: { display: "500/3s", value: {} },
       l4: { display: "1000/2s", value: {} },
       l5: { display: "5000/1s", value: {} },
     },
     cost: {
-      l1: { croissants: 100, production: { chef: 10, bakery: 10 } },
-      l2: { croissants: 100, production: { chef: 10, bakery: 10 } },
-      l3: { croissants: 100, production: { chef: 10, bakery: 10 } },
-      l4: { croissants: 100, production: { chef: 10, bakery: 10 } },
-      l5: { croissants: 100, production: { chef: 10, bakery: 10 } },
+      l1: { money: 100, research: 50 },
+      l2: { money: 100, research: 75 },
+      l3: { money: 100, research: 150 },
+      l4: { money: 100, research: 250 },
+      l5: { money: 100, research: 500 },
+    },
+  },
+  price: {
+    name: "Higher Quality Croissants",
+    type: "price",
+    effect: {
+      l1: { display: "$2", value: {} },
+      l2: { display: "$3", value: {} },
+      l3: { display: "$5", value: {} },
+      l4: { display: "$8", value: {} },
+      l5: { display: "$14", value: {} },
+    },
+    cost: {
+      l1: { money: 100, research: 50 },
+      l2: { money: 100, research: 75 },
+      l3: { money: 100, research: 150 },
+      l4: { money: 100, research: 250 },
+      l5: { money: 100, research: 500 },
+    },
+  },
+  cheap: {
+    name: "Cheaper Ingredients",
+    type: "discount",
+    effect: {
+      l1: { display: "10% discount", value: {} },
+      l2: { display: "20% discount", value: {} },
+      l3: { display: "30% discount", value: {} },
+      l4: { display: "40% discount", value: {} },
+      l5: { display: "50% discount", value: {} },
+    },
+    cost: {
+      l1: { money: 100, research: 50 },
+      l2: { money: 100, research: 75 },
+      l3: { money: 100, research: 150 },
+      l4: { money: 100, research: 250 },
+      l5: { money: 100, research: 500 },
+    },
+  },
+  luck: {
+    name: "Luckier Market",
+    type: "luck",
+    effect: {
+      l1: { display: "1.2x luck", value: {} },
+      l2: { display: "1.4x luck", value: {} },
+      l3: { display: "1.6x luck", value: {} },
+      l4: { display: "1.8x luck", value: {} },
+      l5: { display: "2x luck", value: {} },
+    },
+    cost: {
+      l1: { money: 100, research: 50 },
+      l2: { money: 100, research: 75 },
+      l3: { money: 100, research: 150 },
+      l4: { money: 100, research: 250 },
+      l5: { money: 100, research: 500 },
     },
   },
 };
 const rarityWeight = {
-  basic: 5,
-  premium: 5,
+  basic: 20,
+  premium: 10,
   deluxe: 5,
 };
 
@@ -267,6 +353,15 @@ function UnlockShop({
   currentProduction,
   money,
   croissantStatsTable,
+  unlockLevel,
+  changeLevel,
+  setUnlockLevel,
+  changeLevelPrice,
+  unlockLevelPrice,
+  unlockLevelR,
+  setUnlockLevelR,
+  research,
+  changeResearch,
 }) {
   const entries = Object.entries(croissantUnlockData);
   let firstLockedIndex = entries.findIndex(([key, value], index) => {
@@ -287,12 +382,10 @@ function UnlockShop({
             <div className="left-info">
               <div className="un-container">
                 <div className="unlock-name">
-                  <div className="c-level"> L{value.level} </div>
+                  <div className={`c-level ${levelClass(unlockLevel[key])}`}>
+                    {unlockLevel[key] == 20 ? "MAX" : `L${unlockLevel[key]}`}
+                  </div>
                   Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
-                  <FontAwesomeIcon
-                    icon={faCircleUp}
-                    className="upgrade-pending"
-                  />
                 </div>
               </div>
               <div className="description">
@@ -326,7 +419,37 @@ function UnlockShop({
                 : formatMoney(unlockPrices[key] * purchaseAmount)}
             </div>
           </div>
-          <div className="train-area"></div>
+          <div
+            className={`train-area ${
+              unlockAmount[key] >= unlockLevelR[key] && unlockLevel[key] < 20
+                ? ""
+                : "disabled"
+            }`}
+          >
+            <div
+              className={`train-btn ${levelClass(unlockLevel[key])} ${
+                research >= unlockLevelPrice[key] ? "" : "btn-disabled"
+              }`}
+              onClick={() =>
+                changeLevel(
+                  key,
+                  unlockLevelPrice[key],
+                  setUnlockLevel,
+                  changeLevelPrice,
+                  setUnlockLevelR,
+                  research
+                )
+              }
+            >
+              Upgrade to L{unlockLevel[key] + 1}
+            </div>
+            <div className="train-cost">
+              <span>
+                {unlockLevelPrice[key]}
+                <i>R</i> required
+              </span>
+            </div>
+          </div>
         </div>
       );
     }
@@ -359,35 +482,48 @@ function UnlockShop({
     return null;
   });
 }
-function iterateUpgradeCost(upgrade) {
-  const costs = [];
-  console.log(upgrade);
-  for (const [type, cost] of Object.entries(upgrade)) {
-    costs.push({ type, cost });
-  }
-  console.log(costs);
-  return costs;
-}
-function UpgradeShop({ croissantUpgrades, croissantStats }) {
+
+function UpgradeShop({ croissantUpgrades, croissantStats, research }) {
+  console.log(research);
   const entries = Object.entries(croissantUpgrades);
   return entries.map(([key, value]) => (
     <div className="upgrade" key={key}>
-      <div className="upgrade-name">{value.name}</div>
-      <div className="upgrade-desc">
-        {value.desc} {croissantStats.sellAmount}/{croissantStats.sellSpeed}s{" "}
-        <FontAwesomeIcon icon={faArrowRight} /> {value.effect.l1.display}
-      </div>
-      <div>
-        costs {value.cost.l1.croissants} croissants
-        {iterateUpgradeCost(value.cost.l1).map((cost) => (
-          <div key={cost.type}>
-            {Object.entries(cost.cost).map(([ckey, cvalue]) => (
-              <span key={ckey}>
-                {cvalue} {ckey}
-              </span>
-            ))}
+      <div className="info">
+        <div className="left-info">
+          <div className="un-container">
+            <div className="unlock-name">
+              <div className="u-level">I</div>
+              {value.name}
+            </div>
           </div>
-        ))}
+          <div className="description">
+            {getCurrentStat(croissantStats, value.type)}
+            <FontAwesomeIcon icon={faCaretRight} /> {value.effect.l1.display}
+          </div>
+        </div>
+      </div>
+      <div
+        className={
+          research >= value.cost.l1.research ? "buyarea" : "buyarea disabled"
+        }
+      >
+        <div className="buy-btn">Upgrade</div>
+        <div className="price">${value.cost.l1.money}</div>
+      </div>
+      <div
+        className={
+          research >= value.cost.l1.research
+            ? "research-req disabled"
+            : "research-req"
+        }
+      >
+        <div>
+          <span>
+            <FontAwesomeIcon icon={faUpLong} />
+            {value.cost.l1.research}
+            <i>R </i> required to upgrade
+          </span>
+        </div>
       </div>
     </div>
   ));
@@ -749,7 +885,28 @@ function handleBuyItem(
 }
 
 function App() {
-  const [money, setMoney] = useState(10000);
+  const [money, setMoney] = useState(543254443);
+  const [unlockLevel, setUnlockLevel] = useState({
+    chef: 1,
+    bakery: 1,
+    market: 1,
+    factory: 1,
+    industry: 1,
+  });
+  const [unlockLevelR, setUnlockLevelR] = useState({
+    chef: 5,
+    bakery: 5,
+    market: 5,
+    factory: 5,
+    industry: 5,
+  });
+  const [unlockLevelPrice, setUnlockLevelPrice] = useState({
+    chef: 10,
+    bakery: 10,
+    market: 10,
+    factory: 10,
+    industry: 10,
+  });
   const [productionAmount, setProductionAmount] = useState({
     amount: 0,
     multiplier: 1,
@@ -791,8 +948,12 @@ function App() {
     productionSpeed: 1,
     sellSpeed: 5,
     price: 1,
-    sellAmount: 50,
+    luck: 1,
+    discount: 0,
+    sellAmount: 100,
   });
+  const [research, setResearch] = useState(500000);
+
   const croissantStatsRef = useRef(croissantStats);
   const [sellBarKey, setSellBarKey] = useState(0);
   const [inventory, setInventory] = useState([
@@ -874,7 +1035,36 @@ function App() {
     }, croissantStats.productionSpeed * 1000);
     return () => clearInterval(produceInterval);
   }, [croissantStats, productionAmount.productionSpeed]);
-
+  const changeLevel = (
+    key,
+    price,
+    setLevel,
+    changeLevelPrice,
+    setUnlockLevelR,
+    research
+  ) => {
+    if (research >= price) {
+      setLevel((prev) => ({
+        ...prev,
+        [key]: prev[key] + 1,
+      }));
+      changeLevelPrice(key);
+      changeUnlockLevelR(key);
+    }
+  };
+  const changeUnlockLevelR = (key) => {
+    setUnlockLevelR((prev) => ({
+      ...prev,
+      [key]: Math.floor(prev[key] * 1.3),
+    }));
+    console.log(unlockLevelR[key]);
+  };
+  const changeLevelPrice = (key) => {
+    setUnlockLevelPrice((prev) => ({
+      ...prev,
+      [key]: Math.ceil(prev[key] * 1.5),
+    }));
+  };
   const handlePurchase = (
     key,
     price,
@@ -939,6 +1129,14 @@ function App() {
               currentProduction={productionAmount}
               money={money}
               croissantStatsTable={croissantStatsTable}
+              unlockLevel={unlockLevel}
+              changeLevel={changeLevel}
+              setUnlockLevel={setUnlockLevel}
+              changeLevelPrice={changeLevelPrice}
+              unlockLevelPrice={unlockLevelPrice}
+              unlockLevelR={unlockLevelR}
+              setUnlockLevelR={changeUnlockLevelR}
+              research={research}
             />
           )}
           {activeTab === 2 && (
@@ -993,7 +1191,7 @@ function App() {
                 Money <span>${money}</span>
               </div>
               <div>
-                Production{" "}
+                Production
                 <span>
                   {Math.round(
                     productionAmount.amount * productionAmount.multiplier
@@ -1004,9 +1202,9 @@ function App() {
                     : croissantStats.productionSpeed}
                   s
                 </span>
-              </div>{" "}
+              </div>
               <div>
-                Sell Rate{" "}
+                Sell Rate
                 <span>
                   {croissantStats.sellAmount}/{croissantStats.sellSpeed}s
                 </span>
@@ -1085,34 +1283,10 @@ function App() {
             <UpgradeShop
               croissantUpgrades={croissantUpgrades}
               croissantStats={croissantStats}
+              research={research}
             />
           )}
-          {activeUTab === 2 && (
-            <MarketStore
-              items={marketItems}
-              playerInventory={inventory}
-              setInventory={setInventory}
-              changeMoney={setMoney}
-              money={money}
-              setMarketItems={setMarketItems}
-              marketItems={marketItems}
-            />
-          )}
-          {activeUTab === 3 && (
-            <>
-              {ieSelected === 1 && (
-                <IngredientsList playerInventory={inventory} />
-              )}
-              {ieSelected === 2 && (
-                <EnhancementsList
-                  playerInventory={inventory}
-                  setInventory={setInventory}
-                  setProductionAmount={setProductionAmount}
-                  setCroissantStats={setCroissantStats}
-                />
-              )}
-            </>
-          )}
+          {activeUTab === 3 && <></>}
         </div>
       </div>
     </>
