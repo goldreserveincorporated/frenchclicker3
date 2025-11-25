@@ -3,6 +3,10 @@
   --light-green: #80ef80;
   --blue: #a4abff;
   --gray: #d3d3d3;
+  --cornflower: #6395ee;
+  --jade: #00bb77;
+  --heliotrope: #df73ff;
+  --pumpkin: #ff7518;
   --teal: #80ffdb;
   --seafoam: #8ddcdc;
   --yellow: #ffc067;
@@ -786,11 +790,26 @@
   display: inline-block;
 }
 .u-level {
-  color: var(--gray);
   font-weight: bold;
   font-family: "Roboto Mono", monospace;
   font-size: 60%;
   display: inline-block;
+}
+.u-level.i2 {
+  color: var(--cornflower);
+  text-shadow: 0 0 5px var(--cornflower);
+}
+.u-level.i3 {
+  color: var(--jade);
+  text-shadow: 0 0 5px var(--jade);
+}
+.u-level.i4 {
+  color: var(--heliotrope);
+  text-shadow: 0 0 5px var(--heliotrope);
+}
+.u-level.i5 {
+  color: var(--pumpkin);
+  text-shadow: 0 0 5px var(--pumpkin);
 }
 .sell-time {
   border: 1px solid var(--money-green);

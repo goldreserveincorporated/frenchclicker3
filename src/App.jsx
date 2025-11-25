@@ -361,7 +361,6 @@ function UnlockShop({
   unlockLevelR,
   setUnlockLevelR,
   research,
-  changeResearch,
 }) {
   const entries = Object.entries(croissantUnlockData);
   let firstLockedIndex = entries.findIndex(([key, value], index) => {
@@ -492,7 +491,7 @@ function UpgradeShop({ croissantUpgrades, croissantStats, research }) {
         <div className="left-info">
           <div className="un-container">
             <div className="unlock-name">
-              <div className="u-level">I</div>
+              <div className="u-level i5">I</div>
               {value.name}
             </div>
           </div>
