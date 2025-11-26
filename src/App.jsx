@@ -24,7 +24,6 @@ import {
   faArrowRight,
   faBox,
 } from "@fortawesome/free-solid-svg-icons";
-
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -33,6 +32,32 @@ function formatTime(seconds) {
     .padStart(2, "0")}`;
 }
 
+function romanize(num) {
+  var lookup = {
+      M: 1000,
+      CM: 900,
+      D: 500,
+      CD: 400,
+      C: 100,
+      XC: 90,
+      L: 50,
+      XL: 40,
+      X: 10,
+      IX: 9,
+      V: 5,
+      IV: 4,
+      I: 1,
+    },
+    roman = "",
+    i;
+  for (i in lookup) {
+    while (num >= lookup[i]) {
+      roman += i;
+      num -= lookup[i];
+    }
+  }
+  return roman;
+}
 function formatMoney(num) {
   const lookup = [
     { value: 1, symbol: "" },
@@ -107,7 +132,10 @@ function groupInventoryItems(inventory) {
   return Object.values(grouped);
 }
 function levelClass(level) {
-  if (level >= 20) {
+  if (level == 20) {
+    return "l100";
+  }
+  if (level >= 15) {
     return "l50";
   }
   if (level >= 10) {
@@ -117,6 +145,23 @@ function levelClass(level) {
     return "l10";
   } else {
     return "l1";
+  }
+}
+function upgradeClass(level) {
+  console.log(level);
+  if (level == 5) {
+    return "i5";
+  }
+  if (level == 4) {
+    return "i4";
+  }
+  if (level == 3) {
+    return "i3";
+  }
+  if (level == 2) {
+    return "i2";
+  } else {
+    return "i1";
   }
 }
 function getIngredientAmount(inventory, ingredient) {
@@ -258,7 +303,7 @@ const croissantUpgrades = {
       l5: { display: "5000/1s", value: {} },
     },
     cost: {
-      l1: { money: 100, research: 50 },
+      l1: { money: 4535342, research: 50 },
       l2: { money: 100, research: 75 },
       l3: { money: 100, research: 150 },
       l4: { money: 100, research: 250 },
@@ -321,9 +366,9 @@ const croissantUpgrades = {
   },
 };
 const rarityWeight = {
-  basic: 20,
-  premium: 10,
-  deluxe: 5,
+  basic: 25,
+  premium: 12,
+  deluxe: 10,
 };
 
 function getRarityIcon(rarity) {
@@ -381,7 +426,10 @@ function UnlockShop({
             <div className="left-info">
               <div className="un-container">
                 <div className="unlock-name">
-                  <div className={`c-level ${levelClass(unlockLevel[key])}`}>
+                  <div
+                    className={`c-level ${levelClass(unlockLevel[key])}`}
+                    data-splitting
+                  >
                     {unlockLevel[key] == 20 ? "MAX" : `L${unlockLevel[key]}`}
                   </div>
                   Croissant {key.charAt(0).toUpperCase() + key.slice(1)}
@@ -482,8 +530,16 @@ function UnlockShop({
   });
 }
 
-function UpgradeShop({ croissantUpgrades, croissantStats, research }) {
+function UpgradeShop({
+  croissantUpgrades,
+  croissantStats,
+  research,
+  changeCroissantULevel,
+  croissantULevel,
+  changeMoney,
+}) {
   console.log(research);
+  console.log(croissantULevel);
   const entries = Object.entries(croissantUpgrades);
   return entries.map(([key, value]) => (
     <div className="upgrade" key={key}>
@@ -491,27 +547,45 @@ function UpgradeShop({ croissantUpgrades, croissantStats, research }) {
         <div className="left-info">
           <div className="un-container">
             <div className="unlock-name">
-              <div className="u-level i5">I</div>
+              <div className={`u-level ${upgradeClass(croissantULevel[key])}`}>
+                {romanize(croissantULevel[key])}
+              </div>
               {value.name}
             </div>
           </div>
           <div className="description">
             {getCurrentStat(croissantStats, value.type)}
-            <FontAwesomeIcon icon={faCaretRight} /> {value.effect.l1.display}
+            <FontAwesomeIcon icon={faCaretRight} />{" "}
+            {value.effect[`l${croissantULevel[key]}`].display}
           </div>
         </div>
       </div>
       <div
         className={
-          research >= value.cost.l1.research ? "buyarea" : "buyarea disabled"
+          research >= value.cost[`l${croissantULevel[key]}`].research
+            ? "buyarea"
+            : "buyarea disabled"
         }
       >
-        <div className="buy-btn">Upgrade</div>
-        <div className="price">${value.cost.l1.money}</div>
+        <div
+          className="buy-btn"
+          onClick={() =>
+            changeCroissantULevel(
+              key,
+              value.cost[`l${croissantULevel[key]}`].money,
+              changeMoney
+            )
+          }
+        >
+          Upgrade
+        </div>
+        <div className="price">
+          ${value.cost[`l${croissantULevel[key]}`].money}
+        </div>
       </div>
       <div
         className={
-          research >= value.cost.l1.research
+          research >= value.cost[`l${croissantULevel[key]}`].research
             ? "research-req disabled"
             : "research-req"
         }
@@ -519,7 +593,7 @@ function UpgradeShop({ croissantUpgrades, croissantStats, research }) {
         <div>
           <span>
             <FontAwesomeIcon icon={faUpLong} />
-            {value.cost.l1.research}
+            {value.cost[`l${croissantULevel[key]}`].research}
             <i>R </i> required to upgrade
           </span>
         </div>
@@ -892,6 +966,12 @@ function App() {
     factory: 1,
     industry: 1,
   });
+  const [croissantULevel, setCroissantULevel] = useState({
+    selling: 1,
+    price: 1,
+    cheap: 1,
+    luck: 1,
+  });
   const [unlockLevelR, setUnlockLevelR] = useState({
     chef: 5,
     bakery: 5,
@@ -951,7 +1031,7 @@ function App() {
     discount: 0,
     sellAmount: 100,
   });
-  const [research, setResearch] = useState(500000);
+  const [research, setResearch] = useState(432433);
 
   const croissantStatsRef = useRef(croissantStats);
   const [sellBarKey, setSellBarKey] = useState(0);
@@ -1050,6 +1130,14 @@ function App() {
       changeLevelPrice(key);
       changeUnlockLevelR(key);
     }
+  };
+  const changeCroissantULevel = (key, money, setMoney) => {
+    setCroissantULevel((prev) => ({
+      ...prev,
+      [key]: prev[key] + 1,
+    }));
+    setMoney((prevMoney) => prevMoney - money);
+    console.log(money);
   };
   const changeUnlockLevelR = (key) => {
     setUnlockLevelR((prev) => ({
@@ -1283,6 +1371,9 @@ function App() {
               croissantUpgrades={croissantUpgrades}
               croissantStats={croissantStats}
               research={research}
+              croissantULevel={croissantULevel}
+              changeCroissantULevel={changeCroissantULevel}
+              changeMoney={setMoney}
             />
           )}
           {activeUTab === 3 && <></>}

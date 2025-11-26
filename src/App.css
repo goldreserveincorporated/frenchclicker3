@@ -2,6 +2,7 @@
   --money-green: #adebb3;
   --light-green: #80ef80;
   --blue: #a4abff;
+  --bpink: #ff99c8;
   --gray: #d3d3d3;
   --cornflower: #6395ee;
   --jade: #00bb77;
@@ -9,6 +10,7 @@
   --pumpkin: #ff7518;
   --teal: #80ffdb;
   --seafoam: #8ddcdc;
+  --amber: #ffbe0b;
   --yellow: #ffc067;
   --c-blue: #82c8e5;
   --pink: #fd3db5;
@@ -154,7 +156,6 @@
 }
 .item {
   width: 100%;
-  background-color: var(--secondary);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -694,6 +695,32 @@
   font-size: 80%;
   animation: bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
 }
+
+.l100 {
+  animation: rainbow 2s linear infinite;
+}
+@keyframes rainbow {
+  0% {
+    color: hsl(0, 100%, 67%);
+    text-shadow: 0 0 10px hsl(0, 100%, 67%);
+  }
+  25% {
+    color: hsl(90, 100%, 68%);
+    text-shadow: 0 0 10px hsl(90, 100%, 68%);
+  }
+  50% {
+    color: hsl(180, 100%, 67%);
+    text-shadow: 0 0 10px hsl(180, 100%, 67%);
+  }
+  75% {
+    color: hsl(270, 100%, 67%);
+    text-shadow: 0 0 10px hsl(270, 100%, 67%);
+  }
+  100% {
+    color: hsl(0, 100%, 67%);
+    text-shadow: 0 0 10px hsl(0, 100%, 67%);
+  }
+}
 @keyframes bounce {
   0%,
   100% {
@@ -795,6 +822,10 @@
   font-size: 60%;
   display: inline-block;
 }
+.u-level.i1 {
+  color: var(--gray);
+  text-shadow: 0 0 5px var(--gray);
+}
 .u-level.i2 {
   color: var(--cornflower);
   text-shadow: 0 0 5px var(--cornflower);
@@ -808,8 +839,17 @@
   text-shadow: 0 0 5px var(--heliotrope);
 }
 .u-level.i5 {
-  color: var(--pumpkin);
-  text-shadow: 0 0 5px var(--pumpkin);
+  animation: mythic 1s ease-in-out infinite alternate;
+}
+@keyframes mythic {
+  from {
+    color: var(--pumpkin);
+    text-shadow: 0 0 5px var(--pumpkin);
+  }
+  to {
+    color: var(--amber);
+    text-shadow: 0 0 10px var(--amber);
+  }
 }
 .sell-time {
   border: 1px solid var(--money-green);
