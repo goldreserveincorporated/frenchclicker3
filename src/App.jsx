@@ -148,7 +148,6 @@ function levelClass(level) {
   }
 }
 function upgradeClass(level) {
-  console.log(level);
   if (level == 5) {
     return "i5";
   }
@@ -187,12 +186,7 @@ const enhancementPrices = {
     ],
   },
   produce: {
-    l1: [
-      { key: "salt", amount: 1 },
-      { key: "butter", amount: 2 },
-      { key: "bamboosalt", amount: 1 },
-      { key: "puffpastry", amount: 1 },
-    ],
+    l1: [{ key: "salt", amount: 1 }],
   },
   expensive: {
     l1: [{ key: "salt", amount: 1 }],
@@ -394,7 +388,6 @@ function UnlockShop({
   unlockPrices,
   purchaseAmount,
   onPurchase,
-  addProduction,
   currentProduction,
   money,
   croissantStatsTable,
@@ -448,7 +441,6 @@ function UnlockShop({
                 onPurchase(
                   key,
                   unlockPrices[key],
-                  addProduction,
                   currentProduction,
                   croissantStatsTable
                 )
@@ -538,8 +530,6 @@ function UpgradeShop({
   croissantULevel,
   changeMoney,
 }) {
-  console.log(research);
-  console.log(croissantULevel);
   const entries = Object.entries(croissantUpgrades);
   return entries.map(([key, value]) => (
     <div className="upgrade" key={key}>
@@ -724,7 +714,7 @@ function displayEffects(effects) {
 function activateEnhancement(
   enhancement,
   setCroissantStats,
-  setProductionAmount
+  setProductionMultiplier
 ) {
   if (enhancement.key == "expensive") {
     setCroissantStats((prev) => ({
@@ -751,15 +741,9 @@ function activateEnhancement(
     }, enhancement.effect.duration * 1000);
   }
   if (enhancement.key == "produce") {
-    setProductionAmount((prev) => ({
-      ...prev,
-      multiplier: prev.multiplier * enhancement.effect.effect,
-    }));
+    setProductionMultiplier(enhancement.effect.effect);
     setTimeout(() => {
-      setProductionAmount((prev) => ({
-        ...prev,
-        multiplier: prev.multiplier / enhancement.effect.effect,
-      }));
+      setProductionMultiplier(1 / enhancement.effect.effect);
     }, enhancement.effect.duration * 1000);
   }
 }
@@ -768,7 +752,7 @@ function craftEnhancement(
   enhancement,
   setInventory,
   setCroissantStats,
-  setProductionAmount
+  setProductionMultiplier
 ) {
   const groupedInventory = groupInventoryItems(inventory);
   let canCraft = true;
@@ -797,13 +781,13 @@ function craftEnhancement(
     });
   }
   setInventory(updatedInventory);
-  activateEnhancement(enhancement, setCroissantStats, setProductionAmount);
+  activateEnhancement(enhancement, setCroissantStats, setProductionMultiplier);
 }
 function EnhancementsList({
   playerInventory,
   setInventory,
   setCroissantStats,
-  setProductionAmount,
+  setProductionMultiplier,
 }) {
   return enhancements.map((enhancement) => (
     <div className="enhancement" key={enhancement.name}>
@@ -833,7 +817,7 @@ function EnhancementsList({
             enhancement,
             setInventory,
             setCroissantStats,
-            setProductionAmount
+            setProductionMultiplier
           )
         }
       >
@@ -959,6 +943,7 @@ function handleBuyItem(
 
 function App() {
   const [money, setMoney] = useState(543254443);
+  const [productionMultiplier, setProductionMultiplier] = useState(1);
   const [unlockLevel, setUnlockLevel] = useState({
     chef: 1,
     bakery: 1,
@@ -986,9 +971,12 @@ function App() {
     factory: 10,
     industry: 10,
   });
-  const [productionAmount, setProductionAmount] = useState({
-    amount: 0,
-    multiplier: 1,
+  const [croissantMultiplier, setCroissantMultiplier] = useState({
+    chef: 1,
+    bakery: 1,
+    market: 1,
+    factory: 1,
+    industry: 1,
   });
   const [activeTab, setActiveTab] = useState(1);
   const [activeUTab, setActiveUTab] = useState(1);
@@ -1016,13 +1004,29 @@ function App() {
     factory: { cps: 125 },
     industry: { cps: 450 },
   });
-
+  function getProduction(
+    productionMultiplier,
+    croissantMultiplier,
+    unlockAmount
+  ) {
+    let production = 0;
+    for (const key in croissantMultiplier) {
+      production +=
+        unlockAmount[key] *
+        croissantStatsTable[key].cps *
+        croissantMultiplier[key];
+    }
+    return production * productionMultiplier;
+  }
+  const changeProductionMultiplier = (value) => {
+    console.log("Changing production multiplier by", value);
+    setProductionMultiplier((prev) => prev * value);
+  };
   const [marketItems, setMarketItems] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
   const [scSelected, setScSelected] = useState(0);
   const [croissantAmount, setCroissantAmount] = useState(0);
   const [ieSelected, setIeSelected] = useState(1);
-  const productionAmountRef = useRef(productionAmount);
   const [croissantStats, setCroissantStats] = useState({
     productionSpeed: 1,
     sellSpeed: 5,
@@ -1096,24 +1100,27 @@ function App() {
   }, []);
 
   useEffect(() => {
-    productionAmountRef.current = productionAmount;
-  }, [productionAmount]);
-
-  useEffect(() => {
     const produceInterval = setInterval(() => {
-      console.log(productionAmountRef.current.multiplier);
+      var production = 0;
+      for (const key in croissantMultiplier) {
+        production +=
+          unlockAmount[key] *
+          croissantStatsTable[key].cps *
+          croissantMultiplier[key];
+      }
       setCroissantAmount(
-        (prev) =>
-          prev +
-          Math.round(
-            productionAmountRef.current.amount *
-              productionAmountRef.current.multiplier
-          )
+        (prev) => prev + Math.round(production * productionMultiplier)
       );
       setProdBarKey((prev) => prev + 1);
     }, croissantStats.productionSpeed * 1000);
     return () => clearInterval(produceInterval);
-  }, [croissantStats, productionAmount.productionSpeed]);
+  }, [
+    croissantStats,
+    croissantMultiplier,
+    productionMultiplier,
+    unlockAmount,
+    croissantStatsTable,
+  ]);
   const changeLevel = (
     key,
     price,
@@ -1137,14 +1144,12 @@ function App() {
       [key]: prev[key] + 1,
     }));
     setMoney((prevMoney) => prevMoney - money);
-    console.log(money);
   };
   const changeUnlockLevelR = (key) => {
     setUnlockLevelR((prev) => ({
       ...prev,
       [key]: Math.floor(prev[key] * 1.3),
     }));
-    console.log(unlockLevelR[key]);
   };
   const changeLevelPrice = (key) => {
     setUnlockLevelPrice((prev) => ({
@@ -1152,13 +1157,7 @@ function App() {
       [key]: Math.ceil(prev[key] * 1.5),
     }));
   };
-  const handlePurchase = (
-    key,
-    price,
-    addProduction,
-    currentProduction,
-    croissantStatsTable
-  ) => {
+  const handlePurchase = (key, price, croissantStatsTable) => {
     if (money < price * (purchaseAmount === "Max" ? 1 : purchaseAmount)) return;
 
     if (purchaseAmount === "Max") {
@@ -1168,27 +1167,13 @@ function App() {
         ...prev,
         [key]: prev[key] + maxBuy,
       }));
-      let productionIncrease = maxBuy * croissantStatsTable[key].cps;
-      addProduction((prev) => ({
-        ...prev,
-        amount: prev.amount + productionIncrease,
-      }));
     } else {
       setMoney((m) => m - price * purchaseAmount);
       setUnlockAmount((prev) => ({
         ...prev,
         [key]: prev[key] + purchaseAmount,
       }));
-      let productionIncrease = purchaseAmount * croissantStatsTable[key].cps;
-      addProduction((prev) => ({
-        ...prev,
-        amount: prev.amount + productionIncrease,
-      }));
     }
-  };
-
-  const addProduction = (amount) => {
-    setProductionAmount(amount);
   };
 
   return (
@@ -1212,8 +1197,6 @@ function App() {
               unlockPrices={unlockPrices}
               purchaseAmount={purchaseAmount}
               onPurchase={handlePurchase}
-              addProduction={addProduction}
-              currentProduction={productionAmount}
               money={money}
               croissantStatsTable={croissantStatsTable}
               unlockLevel={unlockLevel}
@@ -1246,8 +1229,8 @@ function App() {
                 <EnhancementsList
                   playerInventory={inventory}
                   setInventory={setInventory}
-                  setProductionAmount={setProductionAmount}
                   setCroissantStats={setCroissantStats}
+                  setProductionMultiplier={changeProductionMultiplier}
                 />
               )}
             </>
@@ -1281,7 +1264,11 @@ function App() {
                 Production
                 <span>
                   {Math.round(
-                    productionAmount.amount * productionAmount.multiplier
+                    getProduction(
+                      productionMultiplier,
+                      croissantMultiplier,
+                      unlockAmount
+                    )
                   )}
                   /
                   {croissantStats.productionSpeed === 1
@@ -1316,7 +1303,11 @@ function App() {
             </div>
             <div
               className={
-                productionAmount.amount > 0
+                getProduction(
+                  productionMultiplier,
+                  croissantMultiplier,
+                  unlockAmount
+                ) > 0
                   ? "progress-container production"
                   : "disabled"
               }
@@ -1327,7 +1318,11 @@ function App() {
                   <div
                     key={prodBarKey}
                     className={
-                      productionAmount.amount > 0
+                      getProduction(
+                        productionMultiplier,
+                        croissantMultiplier,
+                        unlockAmount
+                      ) > 0
                         ? "production-progress running"
                         : "progress-bar"
                     }
