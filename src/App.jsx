@@ -255,7 +255,10 @@ const croissantPlurals = {
   factory: "Factories",
   industry: "Industries",
 };
-
+function getSProduction(key, mult, sTable) {
+  let p = sTable[key].cps * mult;
+  return Math.round(p * 10) / 10;
+}
 const ingredients = {
   flour: { name: "Wheat Flour", rarity: "basic", img: "flour" },
   sugar: { name: "Caster Sugar", rarity: "basic", img: "sugar" },
@@ -399,6 +402,8 @@ function UnlockShop({
   unlockLevelR,
   setUnlockLevelR,
   research,
+  croissantMultiplier,
+  changeCroissantMultiplier,
 }) {
   const entries = Object.entries(croissantUnlockData);
   let firstLockedIndex = entries.findIndex(([key, value], index) => {
@@ -429,7 +434,13 @@ function UnlockShop({
                 </div>
               </div>
               <div className="description">
-                +{croissantStatsTable[key].cps} Croissants/s
+                +
+                {getSProduction(
+                  key,
+                  croissantMultiplier[key],
+                  croissantStatsTable
+                )}{" "}
+                Croissants/s
               </div>
             </div>
             <div className="amount">{unlockAmount[key]}</div>
@@ -476,7 +487,8 @@ function UnlockShop({
                   setUnlockLevel,
                   changeLevelPrice,
                   setUnlockLevelR,
-                  research
+                  research,
+                  changeCroissantMultiplier
                 )
               }
             >
@@ -505,7 +517,8 @@ function UnlockShop({
                 </div>
               </div>
               <div className="description">
-                +{croissantStatsTable[key].cps} Croissants/s
+                +{croissantStatsTable[key].cps * croissantMultiplier[key]}{" "}
+                Croissants/s
               </div>
             </div>
           </div>
@@ -529,6 +542,7 @@ function UpgradeShop({
   changeCroissantULevel,
   croissantULevel,
   changeMoney,
+  money,
 }) {
   const entries = Object.entries(croissantUpgrades);
   return entries.map(([key, value]) => (
@@ -563,7 +577,10 @@ function UpgradeShop({
             changeCroissantULevel(
               key,
               value.cost[`l${croissantULevel[key]}`].money,
-              changeMoney
+              changeMoney,
+              money,
+              croissantUpgrades[key].type,
+              croissantULevel[key]
             )
           }
         >
@@ -591,6 +608,7 @@ function UpgradeShop({
     </div>
   ));
 }
+
 function MarketStore({
   items,
   playerInventory,
@@ -704,6 +722,7 @@ function EnhancementRecipe({ enhancement, inventory }) {
     </div>
   ));
 }
+function activateUpgrade(key, type, level) {}
 function displayEffects(effects) {
   if (Array.isArray(effects)) {
     return effects.map((effect, index) => <span key={index}>{effect}</span>);
@@ -714,7 +733,8 @@ function displayEffects(effects) {
 function activateEnhancement(
   enhancement,
   setCroissantStats,
-  setProductionMultiplier
+  setProductionMultiplier,
+  changeSellMultiplier
 ) {
   if (enhancement.key == "expensive") {
     setCroissantStats((prev) => ({
@@ -729,15 +749,9 @@ function activateEnhancement(
     }, enhancement.effect.duration * 1000);
   }
   if (enhancement.key == "sell") {
-    setCroissantStats((prev) => ({
-      ...prev,
-      sellAmount: Math.round(prev.sellAmount * enhancement.effect.effect),
-    }));
+    changeSellMultiplier(2, 2);
     setTimeout(() => {
-      setCroissantStats((prev) => ({
-        ...prev,
-        sellAmount: Math.round(prev.sellAmount / enhancement.effect.effect),
-      }));
+      changeSellMultiplier(2, 2);
     }, enhancement.effect.duration * 1000);
   }
   if (enhancement.key == "produce") {
@@ -752,7 +766,8 @@ function craftEnhancement(
   enhancement,
   setInventory,
   setCroissantStats,
-  setProductionMultiplier
+  setProductionMultiplier,
+  changeSellMultiplier
 ) {
   const groupedInventory = groupInventoryItems(inventory);
   let canCraft = true;
@@ -781,13 +796,19 @@ function craftEnhancement(
     });
   }
   setInventory(updatedInventory);
-  activateEnhancement(enhancement, setCroissantStats, setProductionMultiplier);
+  activateEnhancement(
+    enhancement,
+    setCroissantStats,
+    setProductionMultiplier,
+    changeSellMultiplier
+  );
 }
 function EnhancementsList({
   playerInventory,
   setInventory,
   setCroissantStats,
   setProductionMultiplier,
+  changeSellMultiplier,
 }) {
   return enhancements.map((enhancement) => (
     <div className="enhancement" key={enhancement.name}>
@@ -817,7 +838,8 @@ function EnhancementsList({
             enhancement,
             setInventory,
             setCroissantStats,
-            setProductionMultiplier
+            setProductionMultiplier,
+            changeSellMultiplier
           )
         }
       >
@@ -942,8 +964,9 @@ function handleBuyItem(
 }
 
 function App() {
-  const [money, setMoney] = useState(543254443);
+  const [money, setMoney] = useState(100000);
   const [productionMultiplier, setProductionMultiplier] = useState(1);
+  const [sellMultiplier, setSellMultiplier] = useState({ amount: 1, sell: 1 });
   const [unlockLevel, setUnlockLevel] = useState({
     chef: 1,
     bakery: 1,
@@ -998,11 +1021,11 @@ function App() {
     industry: 10000,
   });
   const [croissantStatsTable, setCroissantStatsTable] = useState({
-    chef: { cps: 1 },
-    bakery: { cps: 6 },
-    market: { cps: 15 },
-    factory: { cps: 125 },
-    industry: { cps: 450 },
+    chef: { cps: 1, rm: 1.2 },
+    bakery: { cps: 6, rm: 1.25 },
+    market: { cps: 15, rm: 1.3 },
+    factory: { cps: 125, rm: 1.4 },
+    industry: { cps: 450, rm: 1.5 },
   });
   function getProduction(
     productionMultiplier,
@@ -1019,8 +1042,13 @@ function App() {
     return production * productionMultiplier;
   }
   const changeProductionMultiplier = (value) => {
-    console.log("Changing production multiplier by", value);
     setProductionMultiplier((prev) => prev * value);
+  };
+  const changeCroissantMultiplier = (key, value) => {
+    setCroissantMultiplier((prev) => ({
+      ...prev,
+      [key]: prev[key] * value,
+    }));
   };
   const [marketItems, setMarketItems] = useState([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
@@ -1035,7 +1063,7 @@ function App() {
     discount: 0,
     sellAmount: 100,
   });
-  const [research, setResearch] = useState(432433);
+  const [research, setResearch] = useState(100);
 
   const croissantStatsRef = useRef(croissantStats);
   const [sellBarKey, setSellBarKey] = useState(0);
@@ -1059,16 +1087,17 @@ function App() {
       setSellBarKey((prev) => prev + 1);
       setCroissantAmount((prevCount) => {
         let soldAmount =
-          croissantStatsRef.current.sellAmount >= prevCount
+          croissantStatsRef.current.sellAmount * sellMultiplier.amount >=
+          prevCount
             ? prevCount
-            : croissantStatsRef.current.sellAmount;
+            : croissantStatsRef.current.sellAmount * sellMultiplier.amount;
         let profit = soldAmount * croissantStatsRef.current.price;
         setMoney((prevMoney) => prevMoney + profit);
         return prevCount - soldAmount;
       });
     }, croissantStats.sellSpeed * 1000);
     return () => clearInterval(sellInterval);
-  }, [croissantStats.sellSpeed]);
+  }, [croissantStats.sellSpeed, sellMultiplier.amount]);
 
   useEffect(() => {
     const resetMarket = () => {
@@ -1121,29 +1150,38 @@ function App() {
     unlockAmount,
     croissantStatsTable,
   ]);
+  const changeSellMultiplier = (aval, sval) => {
+    setSellMultiplier((prev) => ({ ...prev, amount: prev.amount * aval }));
+    setSellMultiplier((prev) => ({ ...prev, sell: prev.sell * sval }));
+  };
   const changeLevel = (
     key,
     price,
     setLevel,
     changeLevelPrice,
     setUnlockLevelR,
-    research
+    research,
+    changeCroissantMultiplier
   ) => {
     if (research >= price) {
       setLevel((prev) => ({
         ...prev,
         [key]: prev[key] + 1,
       }));
-      changeLevelPrice(key);
+      changeLevelPrice(key, croissantStatsTable[key].rm);
       changeUnlockLevelR(key);
+      changeCroissantMultiplier(key, 1.2);
     }
   };
-  const changeCroissantULevel = (key, money, setMoney) => {
-    setCroissantULevel((prev) => ({
-      ...prev,
-      [key]: prev[key] + 1,
-    }));
-    setMoney((prevMoney) => prevMoney - money);
+  const changeCroissantULevel = (key, price, setMoney, money, level, type) => {
+    if (money >= price) {
+      setCroissantULevel((prev) => ({
+        ...prev,
+        [key]: prev[key] + 1,
+      }));
+      activateUpgrade(key, type, level);
+      setMoney((prevMoney) => prevMoney - price);
+    }
   };
   const changeUnlockLevelR = (key) => {
     setUnlockLevelR((prev) => ({
@@ -1151,10 +1189,10 @@ function App() {
       [key]: Math.floor(prev[key] * 1.3),
     }));
   };
-  const changeLevelPrice = (key) => {
+  const changeLevelPrice = (key, rm) => {
     setUnlockLevelPrice((prev) => ({
       ...prev,
-      [key]: Math.ceil(prev[key] * 1.5),
+      [key]: Math.ceil(prev[key] * rm),
     }));
   };
   const handlePurchase = (key, price, croissantStatsTable) => {
@@ -1207,6 +1245,8 @@ function App() {
               unlockLevelR={unlockLevelR}
               setUnlockLevelR={changeUnlockLevelR}
               research={research}
+              croissantMultiplier={croissantMultiplier}
+              changeCroissantMultiplier={changeCroissantMultiplier}
             />
           )}
           {activeTab === 2 && (
@@ -1231,6 +1271,7 @@ function App() {
                   setInventory={setInventory}
                   setCroissantStats={setCroissantStats}
                   setProductionMultiplier={changeProductionMultiplier}
+                  changeSellMultiplier={changeSellMultiplier}
                 />
               )}
             </>
@@ -1280,7 +1321,8 @@ function App() {
               <div>
                 Sell Rate
                 <span>
-                  {croissantStats.sellAmount}/{croissantStats.sellSpeed}s
+                  {croissantStats.sellAmount * sellMultiplier.amount}/
+                  {croissantStats.sellSpeed}s
                 </span>
               </div>
               <div>
@@ -1368,6 +1410,7 @@ function App() {
               research={research}
               croissantULevel={croissantULevel}
               changeCroissantULevel={changeCroissantULevel}
+              money={money}
               changeMoney={setMoney}
             />
           )}
